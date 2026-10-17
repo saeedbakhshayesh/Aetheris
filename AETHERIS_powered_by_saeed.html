@@ -1,0 +1,2127 @@
+<!DOCTYPE html>
+<html lang="en" class="dark scroll-smooth" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
+    <title>AETHERIS v3.0 // Deep Space & Exoplanet Observatory</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts: Space Grotesk, Inter, JetBrains Mono -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+    <!-- Three.js r128 -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        display: ['Space Grotesk', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'monospace'],
+                    },
+                    animation: {
+                        'spin-slow': 'spin 28s linear infinite',
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        /* ==========================================================================
+           3 COMPLETE & HIGH-CONTRAST THEMES
+           1. Deep-Void Dark (Default)
+           2. Lunar Lab Light (High-Contrast Alabaster & Cobalt)
+           3. Cyber-Gold Obsidian (Pitch Black & Amber/Gold Neon)
+           ========================================================================== */
+        :root, html[data-theme="dark"] {
+            --bg-primary: #05070B;
+            --bg-secondary: #0B101B;
+            --bg-card: rgba(15, 23, 42, 0.72);
+            --bg-subcard: rgba(2, 6, 23, 0.65);
+            --bg-header: rgba(5, 7, 11, 0.80);
+            --border-glass: rgba(255, 255, 255, 0.09);
+            --border-highlight: rgba(0, 240, 255, 0.35);
+            --text-primary: #F8FAFC;
+            --text-secondary: #94A3B8;
+            --text-muted: #64748B;
+            --accent-main: #00F0FF;
+            --accent-secondary: #818CF8;
+            --accent-tertiary: #10B981;
+            --accent-warn: #F59E0B;
+            --accent-glow: rgba(0, 240, 255, 0.22);
+            --grid-line: rgba(255, 255, 255, 0.03);
+            --canvas-grid: rgba(148, 163, 184, 0.14);
+            --canvas-text: #94A3B8;
+        }
+
+        html[data-theme="light"] {
+            --bg-primary: #F1F5F9;
+            --bg-secondary: #E2E8F0;
+            --bg-card: rgba(255, 255, 255, 0.88);
+            --bg-subcard: rgba(241, 245, 249, 0.92);
+            --bg-header: rgba(248, 250, 252, 0.88);
+            --border-glass: rgba(15, 23, 42, 0.12);
+            --border-highlight: rgba(37, 99, 235, 0.45);
+            --text-primary: #0F172A;
+            --text-secondary: #334155;
+            --text-muted: #64748B;
+            --accent-main: #2563EB;
+            --accent-secondary: #4F46E5;
+            --accent-tertiary: #059669;
+            --accent-warn: #D97706;
+            --accent-glow: rgba(37, 99, 235, 0.15);
+            --grid-line: rgba(15, 23, 42, 0.04);
+            --canvas-grid: rgba(15, 23, 42, 0.12);
+            --canvas-text: #334155;
+        }
+
+        html[data-theme="cyber-gold"] {
+            --bg-primary: #070502;
+            --bg-secondary: #120D04;
+            --bg-card: rgba(24, 18, 7, 0.82);
+            --bg-subcard: rgba(12, 9, 3, 0.80);
+            --bg-header: rgba(7, 5, 2, 0.85);
+            --border-glass: rgba(255, 184, 0, 0.20);
+            --border-highlight: rgba(255, 184, 0, 0.55);
+            --text-primary: #FFFBEB;
+            --text-secondary: #FDE68A;
+            --text-muted: #B45309;
+            --accent-main: #FFB800;
+            --accent-secondary: #F97316;
+            --accent-tertiary: #10B981;
+            --accent-warn: #EF4444;
+            --accent-glow: rgba(255, 184, 0, 0.25);
+            --grid-line: rgba(255, 184, 0, 0.04);
+            --canvas-grid: rgba(255, 184, 0, 0.16);
+            --canvas-text: #FDE68A;
+        }
+
+        body {
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+            overflow-x: hidden;
+            transition: background-color 0.35s ease, color 0.35s ease;
+        }
+
+        .theme-text-primary { color: var(--text-primary); }
+        .theme-text-secondary { color: var(--text-secondary); }
+        .theme-text-muted { color: var(--text-muted); }
+        .theme-accent { color: var(--accent-main); }
+        .theme-subcard {
+            background-color: var(--bg-subcard);
+            border: 1px solid var(--border-glass);
+        }
+        .theme-header {
+            background-color: var(--bg-header);
+            border-bottom: 1px solid var(--border-glass);
+        }
+
+        .glass-panel {
+            background: var(--bg-card);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--border-glass);
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.16);
+            transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.3s ease, background-color 0.3s ease;
+        }
+
+        .glass-panel:hover {
+            border-color: var(--border-highlight);
+        }
+
+        /* Cursor Spotlight Bento Effect */
+        .bento-card {
+            position: relative;
+            overflow: hidden;
+        }
+        .bento-card::before {
+            content: '';
+            position: absolute;
+            top: var(--mouse-y, -500px);
+            left: var(--mouse-x, -500px);
+            width: 360px;
+            height: 360px;
+            background: radial-gradient(circle, var(--accent-glow) 0%, transparent 70%);
+            transform: translate(-50%, -50%);
+            pointer-events: none;
+            z-index: 0;
+            transition: opacity 0.3s ease;
+            opacity: 0;
+        }
+        .bento-card:hover::before {
+            opacity: 1;
+        }
+
+        .cosmic-grid {
+            background-size: 40px 40px;
+            background-image: 
+                linear-gradient(to right, var(--grid-line) 1px, transparent 1px),
+                linear-gradient(to bottom, var(--grid-line) 1px, transparent 1px);
+        }
+
+        /* Custom Range Sliders */
+        input[type="range"] {
+            -webkit-appearance: none;
+            appearance: none;
+            background: var(--border-glass);
+            height: 6px;
+            border-radius: 999px;
+            cursor: pointer;
+        }
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: var(--accent-main);
+            cursor: pointer;
+            box-shadow: 0 0 12px var(--accent-main);
+            border: 2px solid #ffffff;
+            transition: transform 0.15s ease;
+        }
+        input[type="range"]::-webkit-slider-thumb:hover {
+            transform: scale(1.15);
+        }
+
+        /* Custom Scrollbars */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: var(--bg-primary); }
+        ::-webkit-scrollbar-thumb { background: var(--border-glass); border-radius: 9999px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--accent-main); }
+
+        /* Prevent accidental scroll while rotating 3D planet on mobile */
+        #three-container {
+            touch-action: none;
+        }
+    </style>
+    <!-- SAEED SIGNATURE INTRO / ADD-ONLY EXTENSION -->
+    <style id="ae-boot-styles">
+      #ae-boot-screen {
+        --boot-cyan: #46f4ff;
+        --boot-blue: #5f7cff;
+        position: fixed; inset: 0; z-index: 2147483000; overflow: hidden;
+        display: grid; place-items: center; isolation: isolate;
+        color: #edfaff; background: #030610;
+        font-family: 'Inter', sans-serif;
+        opacity: 1; visibility: visible;
+        transition: opacity .85s cubic-bezier(.22,1,.36,1), visibility .85s;
+      }
+      #ae-boot-screen.ae-boot-out { opacity: 0; visibility: hidden; pointer-events: none; }
+      #ae-boot-screen[hidden] { display: none !important; }
+      #ae-boot-screen * { box-sizing: border-box; }
+      #ae-boot-screen::before {
+        content: ''; position: absolute; inset: 0; z-index: -2; pointer-events: none;
+        background:
+          radial-gradient(ellipse at 50% 43%, rgba(0, 204, 255, .13), transparent 34%),
+          radial-gradient(ellipse at 13% 82%, rgba(84, 68, 255, .15), transparent 35%),
+          radial-gradient(ellipse at 87% 20%, rgba(0, 240, 255, .075), transparent 30%),
+          linear-gradient(135deg, #030610 0%, #050916 53%, #03050c 100%);
+      }
+      #ae-boot-screen::after {
+        content: ''; position: absolute; inset: 0; z-index: -1; pointer-events: none;
+        background-image: linear-gradient(rgba(133,190,255,.035) 1px, transparent 1px), linear-gradient(90deg, rgba(133,190,255,.035) 1px, transparent 1px);
+        background-size: 52px 52px;
+        mask-image: radial-gradient(ellipse at center, black 15%, transparent 78%);
+        -webkit-mask-image: radial-gradient(ellipse at center, black 15%, transparent 78%);
+      }
+      #ae-boot-canvas { position:absolute; inset:0; width:100%; height:100%; z-index:-1; pointer-events:none; }
+      .ae-boot-scanline {
+        position:absolute; inset:0 auto auto 0; width:100%; height:1px; opacity:.28;
+        background:linear-gradient(90deg,transparent,var(--boot-cyan),transparent);
+        box-shadow:0 0 22px 3px rgba(70,244,255,.18); animation:aeScanDrift 7s linear infinite; pointer-events:none;
+      }
+      .ae-boot-frame { width:min(100% - 38px, 940px); min-height:min(780px, 100svh); padding:clamp(22px,4.2vh,42px) 0 24px; display:flex; flex-direction:column; align-items:center; justify-content:space-between; position:relative; }
+      .ae-boot-top, .ae-boot-bottom { width:100%; display:flex; align-items:center; justify-content:space-between; gap:18px; color:rgba(201,222,244,.6); font:10px/1.5 'JetBrains Mono', monospace; letter-spacing:.16em; text-transform:uppercase; }
+      .ae-boot-top-brand { display:flex; align-items:center; gap:11px; color:#eafaff; letter-spacing:.2em; }
+      .ae-boot-mini-mark { display:grid; place-items:center; width:28px; height:28px; border:1px solid rgba(70,244,255,.46); border-radius:9px; color:var(--boot-cyan); box-shadow:inset 0 0 16px rgba(70,244,255,.08),0 0 22px rgba(70,244,255,.08); }
+      .ae-boot-live { display:flex; align-items:center; gap:8px; white-space:nowrap; }
+      .ae-boot-live-dot { width:6px; height:6px; border-radius:50%; background:#62ffcb; box-shadow:0 0 12px #62ffcb; animation:aeLivePulse 1.5s ease-in-out infinite; }
+      .ae-boot-center { width:100%; display:flex; flex-direction:column; align-items:center; text-align:center; padding:26px 0 34px; }
+      .ae-boot-eyebrow { display:inline-flex; align-items:center; gap:10px; padding:8px 12px; border:1px solid rgba(106,206,255,.18); background:rgba(4,17,33,.46); border-radius:999px; color:#8ca9c6; font:9px 'JetBrains Mono',monospace; letter-spacing:.2em; text-transform:uppercase; box-shadow:0 0 32px rgba(0,204,255,.035); }
+      .ae-boot-eyebrow::before,.ae-boot-eyebrow::after { content:''; width:17px; height:1px; background:linear-gradient(90deg,transparent,var(--boot-cyan)); opacity:.75; }
+      .ae-boot-eyebrow::after { transform:scaleX(-1); }
+      .ae-boot-orbit-stage { width:clamp(170px,25vw,230px); aspect-ratio:1; position:relative; display:grid; place-items:center; margin:24px 0 15px; filter:drop-shadow(0 0 25px rgba(0,216,255,.08)); }
+      .ae-boot-orbit { position:absolute; border:1px solid rgba(77,224,255,.2); border-radius:50%; transform:rotate(-28deg); }
+      .ae-boot-orbit.ae-orbit-one { width:100%; height:37%; animation:aeOrbitSpin 10s linear infinite; }
+      .ae-boot-orbit.ae-orbit-two { width:86%; height:55%; transform:rotate(48deg); border-color:rgba(117,125,255,.22); animation:aeOrbitSpinReverse 14s linear infinite; }
+      .ae-boot-orbit.ae-orbit-three { width:70%; height:70%; border-style:dashed; border-color:rgba(69,227,255,.12); animation:aeOrbitSpin 34s linear infinite; }
+      .ae-boot-orbit::after { content:''; position:absolute; top:50%; left:-4px; width:7px; height:7px; border-radius:50%; background:var(--boot-cyan); box-shadow:0 0 12px 2px rgba(70,244,255,.9); }
+      .ae-boot-orbit.ae-orbit-two::after { background:#a6a7ff; box-shadow:0 0 12px 2px rgba(135,133,255,.85); width:5px; height:5px; }
+      .ae-boot-planet { position:relative; width:46%; height:46%; border-radius:50%; overflow:hidden; background:radial-gradient(circle at 32% 27%,#6df7ff 0%,#178ba9 17%,#12426f 43%,#08132f 71%,#020715 100%); box-shadow:inset -17px -12px 24px rgba(0,0,0,.82), inset 5px 4px 13px rgba(192,255,255,.4), 0 0 25px rgba(0,205,255,.27), 0 0 75px rgba(0,155,255,.15); animation:aePlanetBreathe 4.6s ease-in-out infinite; }
+      .ae-boot-planet::before { content:''; position:absolute; inset:-20% -35%; transform:rotate(-28deg); background:repeating-linear-gradient(0deg,transparent 0 12px,rgba(81,231,255,.16) 13px,transparent 15px 22px); border-radius:50%; }
+      .ae-boot-planet::after { content:''; position:absolute; top:12%; left:13%; width:28%; height:18%; border-radius:50%; background:rgba(211,255,255,.45); filter:blur(12px); }
+      .ae-boot-crosshair { position:absolute; width:calc(100% + 26px); height:calc(100% + 26px); opacity:.22; }
+      .ae-boot-crosshair::before,.ae-boot-crosshair::after { content:''; position:absolute; background:linear-gradient(90deg,transparent,rgba(90,232,255,.45),transparent); }
+      .ae-boot-crosshair::before { height:1px; width:100%; top:50%; left:0; }
+      .ae-boot-crosshair::after { width:1px; height:100%; left:50%; top:0; background:linear-gradient(transparent,rgba(90,232,255,.45),transparent); }
+      .ae-boot-title { margin:0; font-family:'Space Grotesk',sans-serif; font-size:clamp(42px,8vw,82px); line-height:.98; font-weight:700; letter-spacing:.17em; padding-left:.17em; color:#f4fcff; text-shadow:0 0 38px rgba(52,216,255,.15); }
+      .ae-boot-title span { background:linear-gradient(110deg,#f4fcff 7%,#b9f7ff 37%,#54c9ff 65%,#9095ff 100%); -webkit-background-clip:text; background-clip:text; color:transparent; }
+      .ae-boot-subtitle { margin:15px 0 0; color:rgba(156,191,216,.75); font:clamp(9px,1.35vw,11px) 'JetBrains Mono',monospace; letter-spacing:.34em; text-transform:uppercase; }
+      .ae-boot-byline { display:flex; align-items:center; gap:10px; margin-top:29px; color:rgba(143,171,199,.65); font:9px 'JetBrains Mono',monospace; letter-spacing:.22em; text-transform:uppercase; }
+      .ae-boot-byline::before,.ae-boot-byline::after { content:''; width:28px; height:1px; background:linear-gradient(90deg,transparent,rgba(88,205,255,.45)); }
+      .ae-boot-byline::after { transform:scaleX(-1); }
+      .ae-boot-byline strong { color:#ecfbff; font:600 12px 'Space Grotesk',sans-serif; letter-spacing:.27em; text-shadow:0 0 18px rgba(70,244,255,.4); }
+      .ae-boot-progress-wrap { width:min(100%,540px); margin-top:clamp(24px,4vh,40px); text-align:left; }
+      .ae-boot-progress-meta { display:flex; align-items:flex-end; justify-content:space-between; gap:12px; margin-bottom:12px; }
+      .ae-boot-status { color:#a2c6de; font:10px 'JetBrains Mono',monospace; letter-spacing:.12em; text-transform:uppercase; transition:color .25s ease; }
+      .ae-boot-status::before { content:'>'; color:var(--boot-cyan); margin-right:9px; }
+      .ae-boot-percent { display:flex; align-items:baseline; gap:2px; color:#f3fdff; font:500 clamp(24px,4vw,33px)/1 'Space Grotesk',sans-serif; letter-spacing:-.045em; text-shadow:0 0 24px rgba(69,228,255,.15); font-variant-numeric:tabular-nums; }
+      .ae-boot-percent small { color:var(--boot-cyan); font:10px 'JetBrains Mono',monospace; letter-spacing:.06em; }
+      .ae-boot-track { position:relative; width:100%; height:4px; border-radius:20px; background:rgba(120,174,205,.13); overflow:visible; box-shadow:0 0 0 1px rgba(133,200,230,.035); }
+      .ae-boot-track-fill { width:1%; height:100%; position:relative; border-radius:inherit; background:linear-gradient(90deg,#367aff 0%,#43e5ff 70%,#e5ffff 100%); box-shadow:0 0 15px rgba(65,223,255,.55),0 0 32px rgba(45,158,255,.2); transition:width .12s linear; }
+      .ae-boot-track-fill::after { content:''; position:absolute; top:50%; right:-3px; width:8px; height:8px; border-radius:50%; transform:translateY(-50%); background:#e8ffff; box-shadow:0 0 12px 3px rgba(70,244,255,.7); }
+      .ae-boot-ticks { display:flex; justify-content:space-between; margin-top:9px; color:rgba(127,160,190,.4); font:8px 'JetBrains Mono',monospace; letter-spacing:.08em; }
+      .ae-boot-bottom { border-top:1px solid rgba(148,194,223,.1); padding-top:17px; font-size:8px; letter-spacing:.12em; }
+      .ae-boot-bottom span:last-child { text-align:right; }
+      .ae-boot-bottom b { color:rgba(167,224,245,.8); font-weight:400; }
+      .ae-boot-corner { position:absolute; width:20px; height:20px; opacity:.5; }
+      .ae-boot-corner.tl { top:16px; left:0; border-top:1px solid #55dfff; border-left:1px solid #55dfff; }
+      .ae-boot-corner.tr { top:16px; right:0; border-top:1px solid #55dfff; border-right:1px solid #55dfff; }
+      .ae-boot-corner.bl { bottom:16px; left:0; border-bottom:1px solid #55dfff; border-left:1px solid #55dfff; }
+      .ae-boot-corner.br { bottom:16px; right:0; border-bottom:1px solid #55dfff; border-right:1px solid #55dfff; }
+      @keyframes aeOrbitSpin { to { transform:rotate(332deg); } }
+      @keyframes aeOrbitSpinReverse { to { transform:rotate(-312deg); } }
+      @keyframes aePlanetBreathe { 0%,100% { transform:scale(.98); filter:brightness(.94); } 50% { transform:scale(1.035); filter:brightness(1.12); } }
+      @keyframes aeLivePulse { 0%,100% { opacity:1; transform:scale(1); } 50% { opacity:.45; transform:scale(.75); } }
+      @keyframes aeScanDrift { from { transform:translateY(-5vh); } to { transform:translateY(105vh); } }
+      @media (max-width: 540px) {
+        .ae-boot-frame { width:calc(100% - 34px); min-height:100svh; padding-top:24px; padding-bottom:18px; }
+        .ae-boot-top,.ae-boot-bottom { font-size:8px; letter-spacing:.09em; }
+        .ae-boot-live { font-size:8px; letter-spacing:.08em; }
+        .ae-boot-title { font-size:clamp(39px,12vw,60px); letter-spacing:.12em; padding-left:.12em; }
+        .ae-boot-subtitle { letter-spacing:.19em; line-height:1.7; max-width:290px; }
+        .ae-boot-orbit-stage { margin-top:28px; margin-bottom:12px; }
+        .ae-boot-bottom span:last-child { max-width:46%; }
+      }
+      @media (max-height:700px) and (min-width:541px) {
+        .ae-boot-frame { min-height:100svh; padding-top:17px; padding-bottom:14px; }
+        .ae-boot-orbit-stage { width:150px; margin:9px 0 8px; }
+        .ae-boot-center { padding:14px 0 15px; }
+        .ae-boot-progress-wrap { margin-top:18px; }
+        .ae-boot-byline { margin-top:15px; }
+      }
+      @media (prefers-reduced-motion: reduce) {
+        #ae-boot-screen *, #ae-boot-screen::before, #ae-boot-screen::after { animation-duration:.01ms !important; animation-iteration-count:1 !important; scroll-behavior:auto !important; }
+      }
+    </style>
+</head>
+<body class="cosmic-grid min-h-screen selection:bg-cyan-500 selection:text-slate-950 relative antialiased">
+    <!-- SAEED SIGNATURE INTRO / ADD-ONLY EXTENSION -->
+    <section id="ae-boot-screen" role="status" aria-live="polite" aria-label="AETHERIS loading screen">
+      <canvas id="ae-boot-canvas" aria-hidden="true"></canvas>
+      <div class="ae-boot-scanline" aria-hidden="true"></div>
+      <div class="ae-boot-frame">
+        <i class="ae-boot-corner tl" aria-hidden="true"></i><i class="ae-boot-corner tr" aria-hidden="true"></i>
+        <i class="ae-boot-corner bl" aria-hidden="true"></i><i class="ae-boot-corner br" aria-hidden="true"></i>
+        <header class="ae-boot-top">
+          <div class="ae-boot-top-brand"><span class="ae-boot-mini-mark" aria-hidden="true">✳</span><span>AETHERIS <span style="color:#6f91ad">/</span> OBSERVATORY</span></div>
+          <div class="ae-boot-live"><span class="ae-boot-live-dot"></span><span>BOOT SEQUENCE <span style="color:#65eaff">// 01</span></span></div>
+        </header>
+        <main class="ae-boot-center">
+          <div class="ae-boot-eyebrow">MISSION CONTROL&nbsp; · &nbsp;INITIALIZING</div>
+          <div class="ae-boot-orbit-stage" aria-hidden="true">
+            <div class="ae-boot-crosshair"></div>
+            <div class="ae-boot-orbit ae-orbit-one"></div>
+            <div class="ae-boot-orbit ae-orbit-two"></div>
+            <div class="ae-boot-orbit ae-orbit-three"></div>
+            <div class="ae-boot-planet"></div>
+          </div>
+          <h1 class="ae-boot-title"><span>AETHERIS</span></h1>
+          <p class="ae-boot-subtitle">Deep space &amp; exoplanet observatory</p>
+          <div class="ae-boot-byline"><span>POWERED BY</span><strong>SAEED</strong></div>
+          <div class="ae-boot-progress-wrap">
+            <div class="ae-boot-progress-meta">
+              <div id="ae-boot-status" class="ae-boot-status">Calibrating orbital telemetry</div>
+              <div class="ae-boot-percent"><span id="ae-boot-number">01</span><small>%</small></div>
+            </div>
+            <div id="ae-boot-track" class="ae-boot-track" role="progressbar" aria-label="Page loading progress" aria-valuemin="1" aria-valuemax="100" aria-valuenow="1">
+              <div id="ae-boot-fill" class="ae-boot-track-fill"></div>
+            </div>
+            <div class="ae-boot-ticks" aria-hidden="true"><span>SYS.INIT</span><span>25</span><span>50</span><span>75</span><span>100 / READY</span></div>
+          </div>
+        </main>
+        <footer class="ae-boot-bottom">
+          <span><b>WEBGL</b> · THREE.JS · LIVE TELEMETRY</span>
+          <span>ESTABLISHING VISUAL LINK <b>///</b> <span id="ae-boot-link">CONNECTING</span></span>
+        </footer>
+      </div>
+    </section>
+
+    <!-- Ambient Background Glows -->
+    <div class="fixed top-[-15%] left-[-10%] w-[350px] sm:w-[500px] h-[350px] sm:h-[500px] rounded-full bg-cyan-500/10 blur-[130px] pointer-events-none z-0"></div>
+    <div class="fixed bottom-[-15%] right-[-10%] w-[350px] sm:w-[600px] h-[350px] sm:h-[600px] rounded-full bg-indigo-600/10 blur-[150px] pointer-events-none z-0"></div>
+
+    <!-- Starfield Canvas -->
+    <canvas id="starfield-canvas" class="fixed inset-0 w-full h-full pointer-events-none z-0 opacity-75"></canvas>
+
+    <!-- ==========================================================================
+         STICKY RESPONSIVE TOP NAVBAR + MOBILE DRAWER
+         ========================================================================== -->
+    <header class="sticky top-0 z-40 w-full backdrop-blur-xl theme-header transition-colors">
+        <div class="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-2">
+            <!-- Brand Identity -->
+            <a href="#" class="flex items-center space-x-2.5 shrink-0 focus:outline-none">
+                <div class="relative flex items-center justify-center w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-gradient-to-br from-cyan-400 to-indigo-600 p-[1px]">
+                    <div class="w-full h-full bg-slate-950 rounded-xl flex items-center justify-center">
+                        <i data-lucide="orbit" class="w-5 h-5 text-cyan-400 animate-spin-slow"></i>
+                    </div>
+                    <span class="absolute -top-1 -right-1 flex h-2.5 w-2.5">
+                        <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-cyan-400 opacity-75"></span>
+                        <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-cyan-500"></span>
+                    </span>
+                </div>
+                <div>
+                    <div class="flex items-center space-x-1.5">
+                        <span class="font-display font-bold tracking-wider text-base sm:text-lg theme-text-primary">AETHERIS</span>
+                        <span class="text-[10px] font-mono uppercase px-1.5 py-0.5 rounded-full bg-cyan-500/15 theme-accent border border-cyan-500/30 font-semibold">v3.0</span>
+                    </div>
+                    <p class="text-[10px] font-mono theme-text-secondary hidden sm:block">EXOPLANETARY TELEMETRY ARRAY</p>
+                </div>
+            </a>
+
+            <!-- Desktop Navigation Links -->
+            <nav aria-label="Main Navigation" class="hidden lg:flex items-center space-x-1 rounded-full p-1 theme-subcard">
+                <a href="#visualizer" class="px-3.5 py-1.5 rounded-full text-xs font-medium theme-accent bg-cyan-500/10 border border-cyan-500/20 transition-all">3D Viewport</a>
+                <a href="#bento-analytics" class="px-3.5 py-1.5 rounded-full text-xs font-medium theme-text-secondary hover:theme-text-primary transition-all">Spectroscopy</a>
+                <a href="#simulator" class="px-3.5 py-1.5 rounded-full text-xs font-medium theme-text-secondary hover:theme-text-primary transition-all">Terraforming</a>
+                <a href="#notebook" class="px-3.5 py-1.5 rounded-full text-xs font-medium theme-text-secondary hover:theme-text-primary transition-all">Captain's Log</a>
+            </nav>
+
+            <!-- Action Controls -->
+            <div class="flex items-center space-x-1.5 sm:space-x-2">
+                <!-- Command Palette Button -->
+                <button id="cmd-btn" aria-label="Open Command Palette" class="flex items-center space-x-2 px-2.5 sm:px-3 py-1.5 rounded-xl theme-subcard hover:border-cyan-400/50 text-xs theme-text-secondary transition-all">
+                    <i data-lucide="search" class="w-3.5 h-3.5 theme-accent"></i>
+                    <span class="hidden sm:inline">Search</span>
+                    <kbd class="hidden md:inline-block px-1.5 py-0.5 text-[10px] font-mono rounded theme-subcard">⌘K</kbd>
+                </button>
+
+                <!-- Compare 2 Planets Modal Trigger -->
+                <button id="compare-open-btn" aria-label="Compare Exoplanets" class="flex items-center space-x-1.5 px-2.5 sm:px-3 py-1.5 rounded-xl theme-subcard hover:border-cyan-400/50 text-xs theme-text-secondary transition-all" title="Compare 2 Exoplanets Side-by-Side">
+                    <i data-lucide="git-compare" class="w-3.5 h-3.5 theme-accent"></i>
+                    <span class="hidden xl:inline font-mono">Compare</span>
+                </button>
+
+                <!-- 3-Way Theme Switcher with Label -->
+                <button id="theme-toggle" aria-label="Cycle Color Theme" class="flex items-center space-x-1.5 px-2.5 py-1.5 rounded-xl theme-subcard hover:border-cyan-400/50 text-xs font-mono theme-text-primary transition-all" title="Cycle Theme: Deep-Void Dark / Lunar Lab Light / Cyber-Gold">
+                    <i data-lucide="palette" class="w-3.5 h-3.5 theme-accent"></i>
+                    <span id="theme-label" class="hidden sm:inline text-[11px]">DARK</span>
+                </button>
+
+                <!-- Ambient Space Drone Toggle -->
+                <button id="drone-toggle" aria-label="Toggle Ambient Space Drone" class="p-2 rounded-xl theme-subcard hover:border-cyan-400/50 theme-text-secondary transition-all" title="Toggle Deep Space Ambient Drone">
+                    <i data-lucide="radio" id="drone-icon" class="w-4 h-4"></i>
+                </button>
+
+                <!-- UI Audio FX Toggle -->
+                <button id="sound-toggle" aria-label="Toggle UI Sound Effects" class="hidden sm:flex p-2 rounded-xl theme-subcard hover:border-cyan-400/50 theme-text-secondary transition-all" title="Toggle UI Micro-Interaction Audio">
+                    <i data-lucide="volume-2" id="sound-icon" class="w-4 h-4"></i>
+                </button>
+
+                <!-- Keyboard Shortcuts Help (?) -->
+                <button id="help-btn" aria-label="Keyboard Shortcuts" class="hidden sm:flex p-2 rounded-xl theme-subcard hover:border-cyan-400/50 theme-text-secondary transition-all" title="Keyboard Shortcuts (?)">
+                    <i data-lucide="help-circle" class="w-4 h-4"></i>
+                </button>
+
+                <!-- Mobile Hamburger Drawer Button (< 1024px) -->
+                <button id="mobile-menu-btn" aria-label="Open Navigation Menu" aria-expanded="false" class="lg:hidden p-2 rounded-xl theme-subcard theme-text-primary">
+                    <i data-lucide="menu" id="mobile-menu-icon" class="w-5 h-5"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Collapsible Mobile Menu Drawer -->
+        <div id="mobile-drawer" class="hidden lg:hidden border-t border-white/10 px-4 pt-3 pb-5 space-y-3 theme-header backdrop-blur-2xl">
+            <div class="grid grid-cols-2 gap-2 text-xs font-mono">
+                <a href="#visualizer" class="mobile-nav-link p-2.5 rounded-xl theme-subcard flex items-center space-x-2 theme-text-primary">
+                    <i data-lucide="globe" class="w-4 h-4 theme-accent"></i><span>3D Viewport</span>
+                </a>
+                <a href="#bento-analytics" class="mobile-nav-link p-2.5 rounded-xl theme-subcard flex items-center space-x-2 theme-text-primary">
+                    <i data-lucide="activity" class="w-4 h-4 theme-accent"></i><span>Spectroscopy</span>
+                </a>
+                <a href="#simulator" class="mobile-nav-link p-2.5 rounded-xl theme-subcard flex items-center space-x-2 theme-text-primary">
+                    <i data-lucide="sliders" class="w-4 h-4 theme-accent"></i><span>Terraforming</span>
+                </a>
+                <a href="#notebook" class="mobile-nav-link p-2.5 rounded-xl theme-subcard flex items-center space-x-2 theme-text-primary">
+                    <i data-lucide="book-open" class="w-4 h-4 theme-accent"></i><span>Captain's Log</span>
+                </a>
+            </div>
+            <div class="flex items-center justify-between pt-2 border-t border-white/10 text-xs font-mono">
+                <button id="mobile-sound-toggle" class="flex items-center space-x-2 px-3 py-2 rounded-xl theme-subcard theme-text-secondary">
+                    <i data-lucide="volume-2" class="w-4 h-4 theme-accent"></i>
+                    <span>UI Audio FX</span>
+                </button>
+                <button id="mobile-help-btn" class="flex items-center space-x-2 px-3 py-2 rounded-xl theme-subcard theme-text-secondary">
+                    <i data-lucide="help-circle" class="w-4 h-4 theme-accent"></i>
+                    <span>Shortcuts (?)</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- ==========================================================================
+         MAIN CONTENT CONTAINER
+         ========================================================================== -->
+    <main class="relative z-10 max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 pt-5 pb-20 space-y-10 sm:space-y-14">
+
+        <!-- Live Telemetry Status Bar -->
+        <div class="glass-panel rounded-2xl p-3 px-4 flex flex-wrap items-center justify-between gap-3 text-xs font-mono">
+            <div class="flex items-center space-x-2.5">
+                <span class="flex items-center space-x-1.5 text-emerald-500 font-semibold">
+                    <span class="w-2 h-2 rounded-full bg-emerald-500 animate-ping"></span>
+                    <span>TELEMETRY LOCKED</span>
+                </span>
+                <span class="theme-text-muted">|</span>
+                <span class="theme-text-secondary">COORDS: <strong id="live-coords" class="theme-text-primary">RA 19h 44m 00s | DEC +44° 16'</strong></span>
+            </div>
+            <div class="flex items-center space-x-4 sm:space-x-6 overflow-x-auto">
+                <div><span class="theme-text-secondary">DOPPLER:</span> <span id="live-drift" class="theme-accent font-semibold">-14.2 m/s</span></div>
+                <div class="hidden sm:block"><span class="theme-text-secondary">SNR GAIN:</span> <span class="text-indigo-400 font-semibold">+104.6 dB</span></div>
+                <div><span class="theme-text-secondary">UTC:</span> <span id="live-clock" class="theme-text-primary">00:00:00</span></div>
+            </div>
+        </div>
+
+        <!-- ==========================================================================
+             HERO SECTION: EXOPLANET CATALOG & TOUCH-ENABLED 3D VIEWPORT
+             ========================================================================== -->
+        <section id="visualizer" class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
+            <!-- Left Column: Planet Metadata & 5-Target Selector (5 Cols) -->
+            <div class="lg:col-span-5 flex flex-col justify-between space-y-5">
+                <div class="space-y-3">
+                    <div class="flex flex-wrap items-center gap-2">
+                        <div class="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-cyan-500/10 border border-cyan-500/25 theme-accent text-xs font-mono">
+                            <i data-lucide="compass" class="w-3.5 h-3.5"></i>
+                            <span id="planet-sector">SECTOR 09 // CYGNUS</span>
+                        </div>
+                        <span id="planet-star-badge" class="px-2.5 py-1 rounded-full theme-subcard text-[11px] font-mono theme-text-secondary">G2V Yellow Dwarf</span>
+                    </div>
+
+                    <h1 id="planet-name" class="font-display text-3xl sm:text-5xl font-bold tracking-tight leading-none theme-text-primary">
+                        KEPLER-452b
+                    </h1>
+
+                    <p id="planet-desc" class="theme-text-secondary text-sm sm:text-base leading-relaxed">
+                        Often cited as Earth's older cousin, orbiting a G2-type star nearly identical in temperature and mass to our Sun at a 385-day habitable orbital distance.
+                    </p>
+                </div>
+
+                <!-- 5 Exoplanet Catalog Selector -->
+                <div class="space-y-2">
+                    <div class="flex items-center justify-between">
+                        <label class="text-[11px] font-mono uppercase tracking-wider theme-text-secondary">Select Target Catalog (5 Confirmed Worlds)</label>
+                        <button id="inline-compare-btn" class="text-[11px] font-mono theme-accent hover:underline flex items-center space-x-1">
+                            <i data-lucide="columns" class="w-3 h-3"></i>
+                            <span>Compare Side-by-Side</span>
+                        </button>
+                    </div>
+                    <div id="planet-selector-group" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-2 xl:grid-cols-3 gap-2">
+                        <!-- Dynamically rendered by JS -->
+                    </div>
+                </div>
+
+                <!-- Primary KPI Metrics -->
+                <div class="grid grid-cols-3 gap-2.5 sm:gap-3">
+                    <div class="glass-panel rounded-2xl p-3 border-l-2 border-l-cyan-400">
+                        <span class="text-[10px] font-mono uppercase theme-text-secondary block">Similarity</span>
+                        <div class="flex items-baseline space-x-1 mt-1">
+                            <span id="stat-esi" class="font-display text-xl sm:text-2xl font-bold theme-accent">0.83</span>
+                            <span class="text-[10px] font-mono theme-text-secondary">ESI</span>
+                        </div>
+                    </div>
+                    <div class="glass-panel rounded-2xl p-3 border-l-2 border-l-indigo-400">
+                        <span class="text-[10px] font-mono uppercase theme-text-secondary block">Distance</span>
+                        <div class="flex items-baseline space-x-1 mt-1">
+                            <span id="stat-dist" class="font-display text-xl sm:text-2xl font-bold text-indigo-400">1402</span>
+                            <span class="text-[10px] font-mono theme-text-secondary">LY</span>
+                        </div>
+                    </div>
+                    <div class="glass-panel rounded-2xl p-3 border-l-2 border-l-emerald-400">
+                        <span class="text-[10px] font-mono uppercase theme-text-secondary block">Eq. Temp</span>
+                        <div class="flex items-baseline space-x-1 mt-1">
+                            <span id="stat-temp" class="font-display text-xl sm:text-2xl font-bold text-emerald-500">265</span>
+                            <span class="text-[10px] font-mono theme-text-secondary">K</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Primary Action Bar & Export Tools -->
+                <div class="flex flex-wrap items-center gap-2 pt-1">
+                    <button id="btn-scan-surface" class="flex-1 min-w-[160px] py-2.5 px-4 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 text-slate-950 font-display font-semibold text-xs sm:text-sm flex items-center justify-center space-x-2 shadow-lg shadow-cyan-500/20 hover:opacity-95 active:scale-[0.99] transition-all">
+                        <i data-lucide="scan-line" class="w-4 h-4"></i>
+                        <span>Deep Spectral Scan</span>
+                    </button>
+                    <button id="btn-export-json" class="py-2.5 px-3 rounded-xl glass-panel hover:border-cyan-400/50 text-xs font-mono flex items-center space-x-1.5 text-emerald-500" title="Download Complete Telemetry JSON">
+                        <i data-lucide="download" class="w-4 h-4"></i>
+                        <span>JSON</span>
+                    </button>
+                    <button id="btn-copy-md" class="py-2.5 px-3 rounded-xl glass-panel hover:border-cyan-400/50 text-xs font-mono flex items-center space-x-1.5 theme-text-primary" title="Copy Markdown Table for GitHub README">
+                        <i data-lucide="file-code" class="w-4 h-4 theme-accent"></i>
+                        <span>Copy MD</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Right Column: Touch-Enabled Three.js Viewport (7 Cols) -->
+            <div id="viewport-wrapper" class="lg:col-span-7 relative min-h-[360px] sm:min-h-[460px] glass-panel rounded-3xl overflow-hidden flex flex-col justify-between p-4 sm:p-5 select-none">
+                <!-- Top Viewport HUD -->
+                <div class="relative z-10 flex flex-wrap items-center justify-between gap-2 pointer-events-none">
+                    <div class="flex items-center space-x-2 theme-subcard backdrop-blur-md px-3 py-1.5 rounded-xl">
+                        <span class="w-2 h-2 rounded-full bg-cyan-400 animate-pulse"></span>
+                        <span class="text-[10px] sm:text-[11px] font-mono theme-text-primary">WEBGL 3D // DRAG OR TOUCH TO ROTATE</span>
+                    </div>
+
+                    <!-- Camera Controls: Snapshot, Wireframe, Zoom, Fullscreen -->
+                    <div class="pointer-events-auto flex items-center space-x-1 theme-subcard backdrop-blur-md p-1 rounded-xl">
+                        <button id="btn-snapshot" aria-label="Capture PNG Snapshot" class="p-1.5 hover:bg-cyan-500/20 rounded-lg theme-text-primary transition-colors" title="Capture HD Snapshot (PNG)">
+                            <i data-lucide="camera" class="w-3.5 h-3.5 theme-accent"></i>
+                        </button>
+                        <button id="btn-toggle-wireframe" aria-label="Toggle Wireframe Topology" class="p-1.5 hover:bg-cyan-500/20 rounded-lg theme-text-primary transition-colors" title="Toggle Geodesic Wireframe">
+                            <i data-lucide="grid" class="w-3.5 h-3.5"></i>
+                        </button>
+                        <button id="zoom-in" aria-label="Zoom In" class="p-1.5 hover:bg-cyan-500/20 rounded-lg theme-text-primary transition-colors" title="Zoom In">
+                            <i data-lucide="zoom-in" class="w-3.5 h-3.5"></i>
+                        </button>
+                        <button id="zoom-out" aria-label="Zoom Out" class="p-1.5 hover:bg-cyan-500/20 rounded-lg theme-text-primary transition-colors" title="Zoom Out">
+                            <i data-lucide="zoom-out" class="w-3.5 h-3.5"></i>
+                        </button>
+                        <button id="btn-fullscreen" aria-label="Toggle Fullscreen Viewport" class="p-1.5 hover:bg-cyan-500/20 rounded-lg theme-text-primary transition-colors" title="Toggle Fullscreen">
+                            <i data-lucide="maximize-2" class="w-3.5 h-3.5"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 3D WebGL Canvas Mount -->
+                <div id="three-container" class="absolute inset-0 w-full h-full cursor-grab active:cursor-grabbing z-0" role="img" aria-label="Interactive 3D Exoplanet Model"></div>
+
+                <!-- Laser Scan Line Effect -->
+                <div id="scan-laser" class="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-transparent via-cyan-400 to-transparent shadow-[0_0_25px_#00F0FF] opacity-0 pointer-events-none transition-all duration-1000 z-20"></div>
+
+                <!-- Bottom Viewport Telemetry HUD -->
+                <div class="relative z-10 flex flex-wrap items-center justify-between gap-2 pt-4 pointer-events-none">
+                    <div class="flex flex-wrap items-center gap-3 theme-subcard backdrop-blur-md px-3.5 py-2 rounded-xl text-[11px] font-mono">
+                        <div><span class="theme-text-secondary">ORBIT:</span> <span id="hud-period" class="theme-text-primary font-semibold">384.8 d</span></div>
+                        <span class="theme-text-muted">|</span>
+                        <div><span class="theme-text-secondary">RADIUS:</span> <span id="hud-radius" class="theme-accent font-semibold">1.63 R⊕</span></div>
+                        <span class="theme-text-muted hidden sm:inline">|</span>
+                        <div class="hidden sm:block"><span class="theme-text-secondary">MASS:</span> <span id="hud-mass" class="theme-text-primary font-semibold">5.0 M⊕</span></div>
+                    </div>
+
+                    <div class="pointer-events-auto flex items-center space-x-1.5">
+                        <button id="btn-rot-speed" class="px-2.5 py-1.5 rounded-xl theme-subcard text-[11px] font-mono theme-text-primary hover:border-cyan-400/50">
+                            Spin: 1x
+                        </button>
+                        <button id="btn-atmo-glow" class="px-2.5 py-1.5 rounded-xl theme-subcard text-[11px] font-mono theme-accent hover:border-cyan-400/50">
+                            Halo: ON
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ==========================================================================
+             RESPONSIVE BENTO-GRID TELEMETRY (1 Col Mobile -> 2 Col Tablet -> 12 Col Desktop)
+             ========================================================================== -->
+        <section id="bento-analytics" class="space-y-4">
+            <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-2">
+                <div>
+                    <span class="text-xs font-mono uppercase tracking-widest theme-accent">Multi-Instrument Diagnostics</span>
+                    <h2 class="font-display text-2xl sm:text-3xl font-bold theme-text-primary">Exoplanetary Telemetry Bento</h2>
+                </div>
+                <p class="text-xs font-mono theme-text-secondary">REAL-TIME RESIZE-OBSERVER DPI SCALING</p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-5">
+                <!-- Card 1: Transmission Spectroscopy (7 Cols on lg) -->
+                <div class="bento-card md:col-span-2 lg:col-span-7 glass-panel rounded-3xl p-5 sm:p-6 flex flex-col justify-between space-y-4">
+                    <div class="flex flex-wrap items-center justify-between gap-2 relative z-10">
+                        <div>
+                            <div class="flex items-center space-x-2">
+                                <i data-lucide="activity" class="w-4 h-4 theme-accent"></i>
+                                <h3 class="font-display font-semibold text-base sm:text-lg theme-text-primary">Transmission Spectroscopy</h3>
+                            </div>
+                            <p class="text-xs theme-text-secondary">Atmospheric absorption peaks (0.6 – 5.3 μm NIRSpec)</p>
+                        </div>
+                        <div class="flex items-center space-x-1 theme-subcard p-1 rounded-xl">
+                            <button data-band="h2o" class="spec-filter-btn px-2 py-1 rounded-lg text-[11px] font-mono bg-cyan-500/20 theme-accent font-semibold">H₂O</button>
+                            <button data-band="o2" class="spec-filter-btn px-2 py-1 rounded-lg text-[11px] font-mono theme-text-secondary">O₂</button>
+                            <button data-band="ch4" class="spec-filter-btn px-2 py-1 rounded-lg text-[11px] font-mono theme-text-secondary">CH₄</button>
+                            <button data-band="co2" class="spec-filter-btn px-2 py-1 rounded-lg text-[11px] font-mono theme-text-secondary">CO₂</button>
+                            <button id="spec-pause-btn" aria-label="Pause or Play Wave" class="px-2 py-1 rounded-lg text-[11px] font-mono theme-text-primary hover:bg-white/10" title="Pause/Resume Live Wave">
+                                <i data-lucide="pause" id="spec-pause-icon" class="w-3 h-3"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="relative w-full h-48 sm:h-52 theme-subcard rounded-2xl overflow-hidden p-2 z-10">
+                        <canvas id="spectrum-canvas" class="w-full h-full block"></canvas>
+                    </div>
+
+                    <div id="chem-bars" class="grid grid-cols-2 sm:grid-cols-4 gap-2.5 pt-1 relative z-10"></div>
+                </div>
+
+                <!-- Card 2: 5-Axis Biosignature Radar Chart (5 Cols on lg) -->
+                <div class="bento-card md:col-span-1 lg:col-span-5 glass-panel rounded-3xl p-5 sm:p-6 flex flex-col justify-between space-y-4">
+                    <div class="flex items-center justify-between relative z-10">
+                        <div>
+                            <div class="flex items-center space-x-2">
+                                <i data-lucide="shield-check" class="w-4 h-4 text-emerald-500"></i>
+                                <h3 class="font-display font-semibold text-base sm:text-lg theme-text-primary">Biosignature Matrix</h3>
+                            </div>
+                            <p class="text-xs theme-text-secondary">Target (Solid) vs Earth Reference (Dashed)</p>
+                        </div>
+                        <span id="bio-verdict" class="px-2.5 py-1 rounded-full text-[11px] font-mono bg-emerald-500/15 text-emerald-500 border border-emerald-500/30 font-semibold">CLASS A</span>
+                    </div>
+
+                    <div class="relative flex items-center justify-center w-full h-52 z-10">
+                        <canvas id="radar-canvas" class="w-full h-full block"></canvas>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-2 text-xs font-mono theme-subcard p-3 rounded-2xl relative z-10">
+                        <div class="flex justify-between"><span class="theme-text-secondary">MAG FIELD:</span> <span id="bio-mag" class="theme-accent font-semibold">1.6 G</span></div>
+                        <div class="flex justify-between"><span class="theme-text-secondary">TIDAL LOCK:</span> <span id="bio-tidal" class="text-amber-500 font-semibold">None</span></div>
+                    </div>
+                </div>
+
+                <!-- Card 3: Transit Photometry Light Curve (6 Cols on lg) -->
+                <div class="bento-card md:col-span-1 lg:col-span-6 glass-panel rounded-3xl p-5 sm:p-6 flex flex-col justify-between space-y-4">
+                    <div class="flex items-center justify-between relative z-10">
+                        <div>
+                            <div class="flex items-center space-x-2">
+                                <i data-lucide="sun-dim" class="w-4 h-4 text-amber-500"></i>
+                                <h3 class="font-display font-semibold text-base sm:text-lg theme-text-primary">Transit Photometry Curve</h3>
+                            </div>
+                            <p class="text-xs theme-text-secondary">Normalized stellar flux dip during planetary occultation</p>
+                        </div>
+                        <span id="transit-depth-badge" class="font-mono text-xs text-amber-500 bg-amber-500/10 px-2.5 py-1 rounded-lg border border-amber-500/25 font-semibold">ΔF: -0.024%</span>
+                    </div>
+
+                    <div class="relative w-full h-44 theme-subcard rounded-2xl p-2 z-10">
+                        <canvas id="transit-canvas" class="w-full h-full block"></canvas>
+                    </div>
+
+                    <div class="flex items-center justify-between text-[11px] theme-text-secondary font-mono relative z-10">
+                        <span>INGRESS: -3.1H</span>
+                        <span class="theme-accent font-semibold">MID-TRANSIT (T₀)</span>
+                        <span>EGRESS: +3.1H</span>
+                    </div>
+                </div>
+
+                <!-- Card 4: Relativistic Propulsion Calculator (6 Cols on lg) -->
+                <div class="bento-card md:col-span-2 lg:col-span-6 glass-panel rounded-3xl p-5 sm:p-6 flex flex-col justify-between space-y-4">
+                    <div class="flex items-center justify-between relative z-10">
+                        <div>
+                            <div class="flex items-center space-x-2">
+                                <i data-lucide="rocket" class="w-4 h-4 text-indigo-400"></i>
+                                <h3 class="font-display font-semibold text-base sm:text-lg theme-text-primary">Relativistic Propulsion Estimator</h3>
+                            </div>
+                            <p class="text-xs theme-text-secondary">Lorentz factor (γ) & proper ship time dilation</p>
+                        </div>
+                        <span id="lorentz-badge" class="text-xs font-mono theme-accent theme-subcard px-2.5 py-1 rounded-lg">γ = 1.007</span>
+                    </div>
+
+                    <div class="grid grid-cols-3 gap-2 relative z-10">
+                        <button data-speed="0.05" class="prop-btn p-2.5 rounded-xl theme-subcard text-left transition-all">
+                            <div class="text-[10px] font-mono theme-text-secondary">NUCLEAR PULSE</div>
+                            <div class="font-display font-bold text-xs sm:text-sm theme-text-primary">5.0% c</div>
+                        </button>
+                        <button data-speed="0.20" class="prop-btn p-2.5 rounded-xl border border-cyan-500/50 bg-cyan-500/15 text-left transition-all">
+                            <div class="text-[10px] font-mono theme-accent">LASER SAIL</div>
+                            <div class="font-display font-bold text-xs sm:text-sm theme-text-primary">20.0% c</div>
+                        </button>
+                        <button data-speed="0.92" class="prop-btn p-2.5 rounded-xl theme-subcard text-left transition-all">
+                            <div class="text-[10px] font-mono text-indigo-400">ANTIMATTER</div>
+                            <div class="font-display font-bold text-xs sm:text-sm theme-text-primary">92.0% c</div>
+                        </button>
+                    </div>
+
+                    <div class="grid grid-cols-3 gap-2.5 theme-subcard p-3.5 rounded-2xl relative z-10">
+                        <div>
+                            <span class="text-[10px] font-mono theme-text-secondary uppercase block">Earth Frame</span>
+                            <span id="calc-earth-time" class="font-display text-lg sm:text-xl font-bold theme-text-primary">7,010 yrs</span>
+                        </div>
+                        <div>
+                            <span class="text-[10px] font-mono theme-text-secondary uppercase block">Ship Frame</span>
+                            <span id="calc-ship-time" class="font-display text-lg sm:text-xl font-bold theme-accent">6,868 yrs</span>
+                        </div>
+                        <div>
+                            <span class="text-[10px] font-mono theme-text-secondary uppercase block">Mass Ratio</span>
+                            <span id="calc-fuel-ratio" class="font-display text-lg sm:text-xl font-bold text-emerald-500">1:4.2</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ==========================================================================
+             PARAMETRIC TERRAFORMING SYNTHESIZER (4 SLIDERS + NATURAL STATE RESET)
+             ========================================================================== -->
+        <section id="simulator" class="glass-panel rounded-3xl p-5 sm:p-8 relative overflow-hidden">
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center relative z-10">
+                <div class="lg:col-span-7 space-y-5">
+                    <div class="flex flex-wrap items-center justify-between gap-2">
+                        <div>
+                            <span class="text-xs font-mono uppercase tracking-widest text-indigo-400">Atmospheric Engineering</span>
+                            <h2 class="font-display text-2xl sm:text-3xl font-bold theme-text-primary mt-0.5">Parametric Terraforming Synthesizer</h2>
+                        </div>
+                        <button id="btn-reset-sim" class="px-3 py-1.5 rounded-xl theme-subcard hover:border-cyan-400/50 text-xs font-mono theme-accent flex items-center space-x-1.5 transition-all">
+                            <i data-lucide="rotate-ccw" class="w-3.5 h-3.5"></i>
+                            <span>Reset to Natural State</span>
+                        </button>
+                    </div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div class="theme-subcard p-3.5 rounded-2xl space-y-2">
+                            <div class="flex justify-between text-xs font-mono">
+                                <span class="theme-text-secondary">SURFACE PRESSURE</span>
+                                <span id="val-pressure" class="theme-accent font-semibold">1.20 atm</span>
+                            </div>
+                            <input id="sim-pressure" type="range" min="0.1" max="5.0" step="0.1" value="1.2" class="w-full" aria-label="Surface Pressure">
+                        </div>
+
+                        <div class="theme-subcard p-3.5 rounded-2xl space-y-2">
+                            <div class="flex justify-between text-xs font-mono">
+                                <span class="theme-text-secondary">GREENHOUSE GAS %</span>
+                                <span id="val-greenhouse" class="text-indigo-400 font-semibold">2.5%</span>
+                            </div>
+                            <input id="sim-greenhouse" type="range" min="0" max="30" step="0.5" value="2.5" class="w-full" aria-label="Greenhouse Gas Percentage">
+                        </div>
+
+                        <div class="theme-subcard p-3.5 rounded-2xl space-y-2">
+                            <div class="flex justify-between text-xs font-mono">
+                                <span class="theme-text-secondary">STELLAR IRRADIANCE</span>
+                                <span id="val-flux" class="text-amber-500 font-semibold">1.10 S⊕</span>
+                            </div>
+                            <input id="sim-flux" type="range" min="0.2" max="2.4" step="0.05" value="1.10" class="w-full" aria-label="Stellar Irradiance">
+                        </div>
+
+                        <div class="theme-subcard p-3.5 rounded-2xl space-y-2">
+                            <div class="flex justify-between text-xs font-mono">
+                                <span class="theme-text-secondary">PLANETARY ALBEDO</span>
+                                <span id="val-albedo" class="text-emerald-500 font-semibold">0.30</span>
+                            </div>
+                            <input id="sim-albedo" type="range" min="0.05" max="0.80" step="0.01" value="0.30" class="w-full" aria-label="Planetary Bond Albedo">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Outcome Readout Gauge -->
+                <div class="lg:col-span-5 theme-subcard rounded-2xl p-6 flex flex-col items-center text-center space-y-4">
+                    <div class="text-xs font-mono uppercase tracking-wider theme-text-secondary">Simulated Equilibrium State</div>
+                    <div class="relative w-36 h-36 flex items-center justify-center rounded-full border-4 border-cyan-500/35 shadow-[0_0_40px_rgba(0,240,255,0.15)]">
+                        <div>
+                            <div id="sim-score" class="font-display text-4xl font-bold theme-accent">92%</div>
+                            <div class="text-[10px] font-mono theme-text-secondary">HABITABILITY</div>
+                        </div>
+                    </div>
+                    <div class="w-full grid grid-cols-2 gap-3 pt-1 text-xs font-mono">
+                        <div class="p-3 rounded-xl glass-panel">
+                            <span class="theme-text-secondary block text-[10px]">SURFACE TEMP</span>
+                            <span id="sim-temp-out" class="text-sm sm:text-base font-bold text-emerald-500">+16.4°C (289K)</span>
+                        </div>
+                        <div class="p-3 rounded-xl glass-panel">
+                            <span class="theme-text-secondary block text-[10px]">HYDROLOGY PHASE</span>
+                            <span id="sim-water-out" class="text-sm sm:text-base font-bold theme-accent">LIQUID OCEAN</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ==========================================================================
+             CAPTAIN'S RESEARCH LOG (Persistent localStorage + Target Filtering)
+             ========================================================================== -->
+        <section id="notebook" class="glass-panel rounded-3xl p-5 sm:p-8 space-y-6">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div>
+                    <span class="text-xs font-mono uppercase tracking-widest theme-accent">Persistent Browser Storage</span>
+                    <h2 class="font-display text-2xl sm:text-3xl font-bold theme-text-primary">Captain's Research Log</h2>
+                </div>
+                <div class="flex flex-wrap items-center gap-2">
+                    <select id="note-filter" aria-label="Filter Research Logs by Planet" class="px-3 py-2 rounded-xl theme-subcard text-xs font-mono theme-text-primary focus:outline-none">
+                        <option value="ALL">All Exoplanets</option>
+                    </select>
+                    <button id="btn-save-note" class="px-4 py-2 rounded-xl bg-cyan-500 text-slate-950 font-mono text-xs font-semibold hover:bg-cyan-400 transition-all">
+                        + Log Entry
+                    </button>
+                    <button id="btn-clear-notes" class="px-3 py-2 rounded-xl theme-subcard text-xs font-mono text-rose-500 hover:bg-rose-500/10 transition-all">
+                        Reset Logs
+                    </button>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                <div class="lg:col-span-5 space-y-2">
+                    <label for="note-input" class="text-xs font-mono theme-text-secondary block">New Observation for <strong id="note-target-label" class="theme-accent">KEPLER-452b</strong></label>
+                    <textarea id="note-input" rows="4" placeholder="Enter spectral anomaly, biosignature hypothesis, or atmospheric telemetry observation..." class="w-full p-3.5 rounded-2xl theme-subcard text-sm theme-text-primary focus:outline-none focus:border-cyan-400 font-mono"></textarea>
+                </div>
+                <div class="lg:col-span-7 space-y-2">
+                    <label class="text-xs font-mono theme-text-secondary block">Recorded Mission Logs</label>
+                    <div id="notes-list" class="space-y-2.5 max-h-56 overflow-y-auto pr-1"></div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- ==========================================================================
+         FOOTER
+         ========================================================================== -->
+    <footer class="relative z-10 border-t border-white/10 py-8 text-center text-xs font-mono theme-text-secondary">
+        <div class="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div class="flex items-center space-x-2">
+                <span class="w-2 h-2 rounded-full bg-cyan-400"></span>
+                <span>AETHERIS v3.0 // PRODUCTION RELEASE</span>
+            </div>
+            <div>THREE.JS • RESIZEOBSERVER DPI CANVAS • WEB AUDIO SYNTH • LOCALSTORAGE</div>
+        </div>
+    </footer>
+
+    <!-- ==========================================================================
+         MODAL 1: SIDE-BY-SIDE EXOPLANET COMPARISON MATRIX
+         ========================================================================== -->
+    <div id="compare-modal" class="fixed inset-0 z-50 hidden items-center justify-center p-3 sm:p-4 bg-slate-950/80 backdrop-blur-md">
+        <div class="glass-panel w-full max-w-2xl rounded-3xl p-5 sm:p-6 space-y-5 border border-cyan-500/40 max-h-[90vh] overflow-y-auto">
+            <div class="flex items-center justify-between border-b border-white/10 pb-3">
+                <div class="flex items-center space-x-2">
+                    <i data-lucide="git-compare" class="w-5 h-5 theme-accent"></i>
+                    <h3 class="font-display font-bold text-lg theme-text-primary">Exoplanet Side-by-Side Comparison</h3>
+                </div>
+                <button id="compare-close" class="text-xs font-mono theme-text-secondary hover:theme-text-primary px-2.5 py-1 rounded-lg theme-subcard">ESC</button>
+            </div>
+
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <label class="text-[10px] font-mono uppercase theme-text-secondary block mb-1">Primary World (A)</label>
+                    <select id="compare-select-a" class="w-full p-2.5 rounded-xl theme-subcard text-xs font-mono theme-text-primary focus:outline-none"></select>
+                </div>
+                <div>
+                    <label class="text-[10px] font-mono uppercase theme-text-secondary block mb-1">Comparison World (B)</label>
+                    <select id="compare-select-b" class="w-full p-2.5 rounded-xl theme-subcard text-xs font-mono theme-text-primary focus:outline-none"></select>
+                </div>
+            </div>
+
+            <div id="compare-table-body" class="space-y-2 text-xs font-mono"></div>
+        </div>
+    </div>
+
+    <!-- ==========================================================================
+         MODAL 2: COMMAND PALETTE (Ctrl+K / Cmd+K)
+         ========================================================================== -->
+    <div id="cmd-modal" class="fixed inset-0 z-50 hidden items-start justify-center pt-20 sm:pt-24 px-4 bg-slate-950/80 backdrop-blur-md">
+        <div class="glass-panel w-full max-w-lg rounded-2xl overflow-hidden border border-cyan-500/40 shadow-2xl">
+            <div class="flex items-center px-4 py-3 border-b border-white/10">
+                <i data-lucide="terminal" class="w-4 h-4 theme-accent mr-3"></i>
+                <input id="cmd-input" type="text" placeholder="Search exoplanet or command (e.g., Trappist, Compare, Theme)..." class="w-full bg-transparent text-sm theme-text-primary focus:outline-none font-mono">
+                <button id="cmd-close" class="text-xs font-mono theme-text-secondary px-2 py-0.5 rounded theme-subcard">ESC</button>
+            </div>
+            <div id="cmd-results" class="max-h-72 overflow-y-auto p-2 space-y-1 font-mono text-xs"></div>
+        </div>
+    </div>
+
+    <!-- ==========================================================================
+         MODAL 3: KEYBOARD SHORTCUTS (?)
+         ========================================================================== -->
+    <div id="help-modal" class="fixed inset-0 z-50 hidden items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md">
+        <div class="glass-panel w-full max-w-md rounded-2xl p-6 space-y-4 border border-cyan-500/40">
+            <div class="flex items-center justify-between border-b border-white/10 pb-3">
+                <h3 class="font-display font-bold text-lg theme-text-primary">Observatory Shortcuts</h3>
+                <button id="help-close" class="text-xs font-mono theme-text-secondary px-2 py-1 rounded theme-subcard">ESC</button>
+            </div>
+            <div class="space-y-2.5 text-xs font-mono">
+                <div class="flex justify-between py-1.5 border-b border-white/5"><span class="theme-text-secondary">Command Palette</span><kbd class="px-2 py-0.5 theme-subcard theme-accent rounded">Ctrl + K</kbd></div>
+                <div class="flex justify-between py-1.5 border-b border-white/5"><span class="theme-text-secondary">Compare Exoplanets</span><kbd class="px-2 py-0.5 theme-subcard theme-accent rounded">C</kbd></div>
+                <div class="flex justify-between py-1.5 border-b border-white/5"><span class="theme-text-secondary">Cycle Color Theme</span><kbd class="px-2 py-0.5 theme-subcard theme-accent rounded">T</kbd></div>
+                <div class="flex justify-between py-1.5 border-b border-white/5"><span class="theme-text-secondary">Shortcuts Help</span><kbd class="px-2 py-0.5 theme-subcard theme-accent rounded">?</kbd></div>
+                <div class="flex justify-between py-1.5"><span class="theme-text-secondary">Close Any Modal</span><kbd class="px-2 py-0.5 theme-subcard theme-accent rounded">ESC</kbd></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div id="toast" role="status" aria-live="polite" class="fixed bottom-5 right-5 z-50 transform translate-y-24 opacity-0 transition-all duration-300 pointer-events-none">
+        <div class="glass-panel px-4 py-3 rounded-2xl border border-cyan-500/50 flex items-center space-x-3 shadow-xl">
+            <i data-lucide="sparkles" class="w-4 h-4 theme-accent shrink-0"></i>
+            <span id="toast-msg" class="text-xs font-mono theme-text-primary">Telemetry synchronized.</span>
+        </div>
+    </div>
+
+    <!-- ==========================================================================
+         APPLICATION LOGIC
+         ========================================================================== -->
+    <script>
+        // 5 Richly Detailed Exoplanets Catalog
+        const EXOPLANETS = [
+            {
+                id: 'kepler-452b',
+                name: 'KEPLER-452b',
+                sector: 'SECTOR 09 // CYGNUS',
+                type: 'Super-Earth',
+                starType: 'G2V Yellow Dwarf',
+                desc: 'Often cited as Earth\'s older cousin, orbiting a G2-type star nearly identical in temperature and mass to our Sun at a 385-day habitable orbital distance.',
+                esi: 0.83, distance: 1402, temp: 265, period: '384.8 d', radius: '1.63 R⊕', mass: '5.0 M⊕',
+                coords: 'RA 19h 44m 00s | DEC +44° 16\'', transitDip: '-0.024%', mag: '1.6 G', tidal: 'None', verdict: 'CLASS A',
+                naturalSim: { pressure: 1.6, greenhouse: 3.0, flux: 1.10, albedo: 0.30 },
+                colors: { primary: 0x0284c7, secondary: 0x10b981, atmo: 0x38bdf8 },
+                composition: [
+                    { label: 'N₂', pct: 71, color: 'bg-cyan-500' },
+                    { label: 'O₂', pct: 21, color: 'bg-emerald-500' },
+                    { label: 'CO₂', pct: 5, color: 'bg-indigo-500' },
+                    { label: 'H₂O', pct: 3, color: 'bg-blue-500' }
+                ],
+                radar: [0.83, 0.88, 0.82, 0.90, 0.86]
+            },
+            {
+                id: 'trappist-1e',
+                name: 'TRAPPIST-1e',
+                sector: 'SECTOR 04 // AQUARIUS',
+                type: 'Temperate Terra',
+                starType: 'M8V Ultra-Cool Dwarf',
+                desc: 'Fourth planet in a resonant seven-world system. High density indicates a substantial iron core and liquid surface water stability.',
+                esi: 0.95, distance: 39.6, temp: 251, period: '6.1 d', radius: '0.92 R⊕', mass: '0.69 M⊕',
+                coords: 'RA 23h 06m 29s | DEC -05° 02\'', transitDip: '-0.512%', mag: '1.4 G', tidal: 'Resonant', verdict: 'PRIME BIO',
+                naturalSim: { pressure: 1.1, greenhouse: 4.5, flux: 0.66, albedo: 0.25 },
+                colors: { primary: 0x4f46e5, secondary: 0x14b8a6, atmo: 0x00f0ff },
+                composition: [
+                    { label: 'N₂', pct: 76, color: 'bg-cyan-500' },
+                    { label: 'O₂', pct: 17, color: 'bg-emerald-500' },
+                    { label: 'CO₂', pct: 5, color: 'bg-indigo-500' },
+                    { label: 'CH₄', pct: 2, color: 'bg-amber-500' }
+                ],
+                radar: [0.95, 0.91, 0.86, 0.94, 0.82]
+            },
+            {
+                id: 'proxima-b',
+                name: 'PROXIMA CENTAURI b',
+                sector: 'SECTOR 01 // CENTAURI',
+                type: 'Rocky World',
+                starType: 'M5.5Ve Red Dwarf',
+                desc: 'Closest known exoplanet to our Solar System at just 4.24 light-years. Receives Earth-like irradiance but requires strong magnetospheric shielding.',
+                esi: 0.87, distance: 4.24, temp: 234, period: '11.2 d', radius: '1.08 R⊕', mass: '1.17 M⊕',
+                coords: 'RA 14h 29m 42s | DEC -62° 40\'', transitDip: '-0.015%', mag: '0.9 G', tidal: '1:1 Locked', verdict: 'PROXIMITY',
+                naturalSim: { pressure: 0.9, greenhouse: 6.0, flux: 0.65, albedo: 0.28 },
+                colors: { primary: 0xd97706, secondary: 0x059669, atmo: 0xf59e0b },
+                composition: [
+                    { label: 'CO₂', pct: 48, color: 'bg-amber-500' },
+                    { label: 'N₂', pct: 42, color: 'bg-cyan-500' },
+                    { label: 'O₂', pct: 7, color: 'bg-emerald-500' },
+                    { label: 'Ar', pct: 3, color: 'bg-indigo-500' }
+                ],
+                radar: [0.87, 0.74, 0.68, 0.82, 0.70]
+            },
+            {
+                id: 'lhs-1140b',
+                name: 'LHS 1140 b',
+                sector: 'SECTOR 12 // CETUS',
+                type: 'Oceanic Super-Earth',
+                starType: 'M4.5V Red Dwarf',
+                desc: 'Prime JWST target boasting a low-density profile strongly suggestive of a deep global liquid water ocean or thick nitrogen-rich envelope.',
+                esi: 0.91, distance: 48.8, temp: 235, period: '24.7 d', radius: '1.73 R⊕', mass: '5.6 M⊕',
+                coords: 'RA 00h 44m 59s | DEC -15° 16\'', transitDip: '-0.285%', mag: '2.1 G', tidal: 'Slow Spin', verdict: 'OCEAN WORLD',
+                naturalSim: { pressure: 2.2, greenhouse: 5.0, flux: 0.46, albedo: 0.22 },
+                colors: { primary: 0x0369a1, secondary: 0x06b6d4, atmo: 0x22d3ee },
+                composition: [
+                    { label: 'N₂', pct: 68, color: 'bg-cyan-500' },
+                    { label: 'H₂O', pct: 18, color: 'bg-blue-500' },
+                    { label: 'O₂', pct: 10, color: 'bg-emerald-500' },
+                    { label: 'CO₂', pct: 4, color: 'bg-indigo-500' }
+                ],
+                radar: [0.91, 0.94, 0.89, 0.85, 0.88]
+            },
+            {
+                id: 'toi-700d',
+                name: 'TOI-700 d',
+                sector: 'SECTOR 06 // DORADO',
+                type: 'Temperate Terra',
+                starType: 'M2V Quiet Dwarf',
+                desc: 'TESS flagship discovery orbiting a remarkably quiet M-dwarf with zero observed white-light stellar flares, preserving atmospheric stability.',
+                esi: 0.93, distance: 101.4, temp: 269, period: '37.4 d', radius: '1.14 R⊕', mass: '1.57 M⊕',
+                coords: 'RA 06h 28m 23s | DEC -65° 34\'', transitDip: '-0.132%', mag: '1.3 G', tidal: 'Synchronized', verdict: 'STABLE BIO',
+                naturalSim: { pressure: 1.3, greenhouse: 3.5, flux: 0.86, albedo: 0.27 },
+                colors: { primary: 0x0d9488, secondary: 0x6366f1, atmo: 0x2dd4bf },
+                composition: [
+                    { label: 'N₂', pct: 74, color: 'bg-cyan-500' },
+                    { label: 'O₂', pct: 19, color: 'bg-emerald-500' },
+                    { label: 'CO₂', pct: 4, color: 'bg-indigo-500' },
+                    { label: 'CH₄', pct: 3, color: 'bg-amber-500' }
+                ],
+                radar: [0.93, 0.89, 0.92, 0.90, 0.84]
+            }
+        ];
+
+        // Global State & Themes Scope
+        const themes = ['dark', 'light', 'cyber-gold'];
+        const themeNames = { 'dark': 'DARK', 'light': 'LIGHT', 'cyber-gold': 'GOLD' };
+
+        function applyTheme(t) {
+            const theme = themes.includes(t) ? t : 'dark';
+            document.documentElement.setAttribute('data-theme', theme);
+            const labelEl = document.getElementById('theme-label');
+            if (labelEl) {
+                labelEl.textContent = themeNames[theme] || 'DARK';
+            }
+            try {
+                localStorage.setItem('aetheris_v3_theme', theme);
+            } catch (e) {}
+            if (typeof drawRadarChart === 'function') drawRadarChart();
+            if (typeof drawTransitCurve === 'function') drawTransitCurve();
+        }
+
+        let activePlanet = EXOPLANETS[0];
+        let activeSpecBand = 'h2o';
+        let specPaused = false;
+        let selectedShipSpeed = 0.20;
+        let spinMultiplier = 1;
+        let soundEnabled = true;
+        let droneEnabled = false;
+        let audioCtx = null;
+        let droneOsc1 = null, droneOsc2 = null, droneGain = null;
+
+        // Theme Helper for Canvas Rendering
+        function getThemeColors() {
+            const theme = document.documentElement.getAttribute('data-theme') || 'dark';
+            if (theme === 'light') {
+                return {
+                    accent: '#2563EB',
+                    secondary: '#059669',
+                    warn: '#D97706',
+                    grid: 'rgba(15, 23, 42, 0.12)',
+                    text: '#334155',
+                    fill: 'rgba(37, 99, 235, 0.20)'
+                };
+            } else if (theme === 'cyber-gold') {
+                return {
+                    accent: '#FFB800',
+                    secondary: '#F97316',
+                    warn: '#EF4444',
+                    grid: 'rgba(255, 184, 0, 0.18)',
+                    text: '#FDE68A',
+                    fill: 'rgba(255, 184, 0, 0.22)'
+                };
+            }
+            return {
+                accent: '#00F0FF',
+                secondary: '#10B981',
+                warn: '#FFB800',
+                grid: 'rgba(148, 163, 184, 0.14)',
+                text: '#94A3B8',
+                fill: 'rgba(0, 240, 255, 0.22)'
+            };
+        }
+
+        // Synthesized Web Audio API Feedback
+        function playUISound(freq = 880, type = 'sine', duration = 0.05) {
+            if (!soundEnabled) return;
+            try {
+                if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                if (audioCtx.state === 'suspended') audioCtx.resume();
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.type = type;
+                osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(freq * 1.35, audioCtx.currentTime + duration);
+                gain.gain.setValueAtTime(0.035, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                osc.start();
+                osc.stop(audioCtx.currentTime + duration);
+            } catch (e) {}
+        }
+
+        // Dual-Oscillator Filtered Ambient Space Drone
+        function toggleAmbientDrone() {
+            droneEnabled = !droneEnabled;
+            const icon = document.getElementById('drone-icon');
+            icon.style.color = droneEnabled ? 'var(--accent-main)' : '';
+            try {
+                if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                if (audioCtx.state === 'suspended') audioCtx.resume();
+                if (droneEnabled) {
+                    droneOsc1 = audioCtx.createOscillator();
+                    droneOsc2 = audioCtx.createOscillator();
+                    const filter = audioCtx.createBiquadFilter();
+                    droneGain = audioCtx.createGain();
+
+                    droneOsc1.type = 'sawtooth';
+                    droneOsc2.type = 'triangle';
+                    droneOsc1.frequency.setValueAtTime(55, audioCtx.currentTime); // A1
+                    droneOsc2.frequency.setValueAtTime(82.41, audioCtx.currentTime); // E2 fifth
+
+                    filter.type = 'lowpass';
+                    filter.frequency.setValueAtTime(220, audioCtx.currentTime);
+
+                    droneGain.gain.setValueAtTime(0.025, audioCtx.currentTime);
+
+                    droneOsc1.connect(filter);
+                    droneOsc2.connect(filter);
+                    filter.connect(droneGain);
+                    droneGain.connect(audioCtx.destination);
+
+                    droneOsc1.start();
+                    droneOsc2.start();
+                    showToast('Deep Space Harmonic Drone: ACTIVE');
+                } else {
+                    if (droneOsc1) { droneOsc1.stop(); droneOsc1.disconnect(); }
+                    if (droneOsc2) { droneOsc2.stop(); droneOsc2.disconnect(); }
+                    showToast('Deep Space Harmonic Drone: MUTED');
+                }
+            } catch (e) {}
+        }
+
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            document.getElementById('toast-msg').textContent = message;
+            toast.classList.remove('translate-y-24', 'opacity-0');
+            clearTimeout(window._toastTimer);
+            window._toastTimer = setTimeout(() => toast.classList.add('translate-y-24', 'opacity-0'), 2800);
+        }
+
+        // ==========================================================================
+        // THREE.JS TOUCH & MOUSE 3D PLANETARY VIEWPORT
+        // ==========================================================================
+        let scene, camera, renderer, planetMesh, cloudMesh, haloMesh, ringMesh;
+        let isWireframe = false, showHalo = true, isDragging = false, prevPointer = { x: 0, y: 0 };
+        let targetRotation = { x: 0.22, y: 0 };
+
+        function initThreeGlobe() {
+            const container = document.getElementById('three-container');
+            const width = container.clientWidth || 600;
+            const height = container.clientHeight || 450;
+
+            scene = new THREE.Scene();
+            camera = new THREE.PerspectiveCamera(42, width / height, 0.1, 1000);
+            camera.position.z = 5.1;
+
+            // preserveDrawingBuffer required for PNG Snapshot Capture
+            renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, preserveDrawingBuffer: true });
+            renderer.setSize(width, height);
+            renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+            container.appendChild(renderer.domElement);
+
+            scene.add(new THREE.AmbientLight(0x475569, 1.7));
+            const dirLight = new THREE.DirectionalLight(0xffffff, 2.3);
+            dirLight.position.set(5, 3, 5);
+            scene.add(dirLight);
+
+            const geo = new THREE.IcosahedronGeometry(1.55, 14);
+            const pos = geo.attributes.position;
+            const colors = [];
+            const c1 = new THREE.Color(activePlanet.colors.primary);
+            const c2 = new THREE.Color(activePlanet.colors.secondary);
+
+            for (let i = 0; i < pos.count; i++) {
+                const vx = pos.getX(i), vy = pos.getY(i), vz = pos.getZ(i);
+                const noise = Math.sin(vx * 3.4) * Math.cos(vy * 3.4) * Math.sin(vz * 3.4);
+                const scale = 1 + (noise > 0.04 ? noise * 0.045 : 0);
+                pos.setXYZ(i, vx * scale, vy * scale, vz * scale);
+                const mixed = c1.clone().lerp(c2, noise > 0.04 ? 0.85 : 0.18);
+                colors.push(mixed.r, mixed.g, mixed.b);
+            }
+            geo.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3));
+            geo.computeVertexNormals();
+
+            planetMesh = new THREE.Mesh(geo, new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.55, metalness: 0.1 }));
+            scene.add(planetMesh);
+
+            cloudMesh = new THREE.Mesh(
+                new THREE.IcosahedronGeometry(1.61, 6),
+                new THREE.MeshStandardMaterial({ color: 0xffffff, transparent: true, opacity: 0.18, wireframe: true })
+            );
+            scene.add(cloudMesh);
+
+            haloMesh = new THREE.Mesh(
+                new THREE.SphereGeometry(1.76, 32, 32),
+                new THREE.MeshBasicMaterial({ color: activePlanet.colors.atmo, transparent: true, opacity: 0.15, side: THREE.BackSide })
+            );
+            scene.add(haloMesh);
+
+            ringMesh = new THREE.Mesh(
+                new THREE.RingGeometry(2.15, 2.19, 64),
+                new THREE.MeshBasicMaterial({ color: activePlanet.colors.atmo, side: THREE.DoubleSide, transparent: true, opacity: 0.4 })
+            );
+            ringMesh.rotation.x = Math.PI / 2.25;
+            scene.add(ringMesh);
+
+            // Unified Mouse & Single-Finger Touch Rotation
+            const startDrag = (x, y) => { isDragging = true; prevPointer = { x, y }; };
+            const moveDrag = (x, y) => {
+                if (!isDragging) return;
+                targetRotation.y += (x - prevPointer.x) * 0.008;
+                targetRotation.x = Math.max(-1.2, Math.min(1.2, targetRotation.x + (y - prevPointer.y) * 0.008));
+                prevPointer = { x, y };
+            };
+            const endDrag = () => { isDragging = false; };
+
+            container.addEventListener('mousedown', e => startDrag(e.clientX, e.clientY));
+            window.addEventListener('mousemove', e => moveDrag(e.clientX, e.clientY));
+            window.addEventListener('mouseup', endDrag);
+
+            container.addEventListener('touchstart', e => {
+                if (e.touches.length === 1) startDrag(e.touches[0].clientX, e.touches[0].clientY);
+            }, { passive: true });
+            container.addEventListener('touchmove', e => {
+                if (e.touches.length === 1) moveDrag(e.touches[0].clientX, e.touches[0].clientY);
+            }, { passive: true });
+            container.addEventListener('touchend', endDrag);
+
+            // ResizeObserver for crisp 3D container resizing
+            const ro = new ResizeObserver(() => {
+                if (!container || !renderer) return;
+                const w = container.clientWidth;
+                const h = container.clientHeight;
+                if (w === 0 || h === 0) return;
+                camera.aspect = w / h;
+                camera.updateProjectionMatrix();
+                renderer.setSize(w, h);
+            });
+            ro.observe(container);
+        }
+
+        function updateGlobeColors(planet) {
+            if (!planetMesh) return;
+            const pos = planetMesh.geometry.attributes.position;
+            const colorAttr = planetMesh.geometry.attributes.color;
+            const c1 = new THREE.Color(planet.colors.primary);
+            const c2 = new THREE.Color(planet.colors.secondary);
+            for (let i = 0; i < pos.count; i++) {
+                const vx = pos.getX(i), vy = pos.getY(i), vz = pos.getZ(i);
+                const noise = Math.sin(vx * 3.4) * Math.cos(vy * 3.4) * Math.sin(vz * 3.4);
+                const mixed = c1.clone().lerp(c2, noise > 0.04 ? 0.85 : 0.18);
+                colorAttr.setXYZ(i, mixed.r, mixed.g, mixed.b);
+            }
+            colorAttr.needsUpdate = true;
+            haloMesh.material.color.setHex(planet.colors.atmo);
+            ringMesh.material.color.setHex(planet.colors.atmo);
+        }
+
+        function animateThree() {
+            requestAnimationFrame(animateThree);
+            if (planetMesh) {
+                if (!isDragging) targetRotation.y += 0.0022 * spinMultiplier;
+                planetMesh.rotation.y += (targetRotation.y - planetMesh.rotation.y) * 0.08;
+                planetMesh.rotation.x += (targetRotation.x - planetMesh.rotation.x) * 0.08;
+                cloudMesh.rotation.y = planetMesh.rotation.y * 1.18;
+                ringMesh.rotation.z += 0.0012;
+            }
+            if (renderer && scene && camera) renderer.render(scene, camera);
+        }
+
+        // ==========================================================================
+        // RESIZE-OBSERVER DPI-AWARE HTML5 CANVASES
+        // ==========================================================================
+        let specPhase = 0;
+        function drawSpectrumCanvas() {
+            const canvas = document.getElementById('spectrum-canvas');
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+            const dpr = window.devicePixelRatio || 1;
+            const rect = canvas.getBoundingClientRect();
+            if (rect.width > 0 && rect.height > 0) {
+                if (canvas.width !== Math.floor(rect.width * dpr) || canvas.height !== Math.floor(rect.height * dpr)) {
+                    canvas.width = Math.floor(rect.width * dpr);
+                    canvas.height = Math.floor(rect.height * dpr);
+                }
+                ctx.save();
+                ctx.scale(dpr, dpr);
+                ctx.clearRect(0, 0, rect.width, rect.height);
+
+                const tc = getThemeColors();
+                ctx.strokeStyle = tc.grid;
+                ctx.lineWidth = 1;
+                for (let y = 24; y < rect.height; y += 36) {
+                    ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(rect.width, y); ctx.stroke();
+                }
+
+                const bandFreq = { h2o: 12, o2: 18, ch4: 9, co2: 15 }[activeSpecBand] || 12;
+                ctx.beginPath();
+                for (let x = 0; x <= rect.width; x += 3) {
+                    const normX = x / rect.width;
+                    const wave = Math.sin(normX * bandFreq + specPhase) * 22 + Math.cos(normX * 25 - specPhase) * 10;
+                    const y = rect.height * 0.55 + wave;
+                    if (x === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+                }
+                ctx.strokeStyle = tc.accent;
+                ctx.lineWidth = 2.5;
+                ctx.stroke();
+
+                // Wavelength Absorption Markers
+                ctx.fillStyle = tc.text;
+                ctx.font = '10px "JetBrains Mono", monospace';
+                ctx.fillText(`BAND: ${activeSpecBand.toUpperCase()} NIRSpec`, 10, 18);
+                ctx.fillText('1.4 μm', rect.width * 0.25, rect.height - 8);
+                ctx.fillText('2.7 μm', rect.width * 0.55, rect.height - 8);
+                ctx.fillText('4.3 μm', rect.width * 0.82, rect.height - 8);
+                ctx.restore();
+            }
+            if (!specPaused) specPhase += 0.035;
+            requestAnimationFrame(drawSpectrumCanvas);
+        }
+
+        function drawRadarChart() {
+            const canvas = document.getElementById('radar-canvas');
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+            const dpr = window.devicePixelRatio || 1;
+            const rect = canvas.getBoundingClientRect();
+            if (rect.width === 0 || rect.height === 0) return;
+
+            canvas.width = Math.floor(rect.width * dpr);
+            canvas.height = Math.floor(rect.height * dpr);
+            ctx.save();
+            ctx.scale(dpr, dpr);
+            ctx.clearRect(0, 0, rect.width, rect.height);
+
+            const tc = getThemeColors();
+            const cx = rect.width / 2;
+            const cy = rect.height / 2;
+            const radius = Math.min(rect.width, rect.height) * 0.34;
+            const labels = ['ESI', 'ATMO', 'MAG', 'WATER', 'FLUX'];
+
+            // Concentric Pentagons
+            [0.35, 0.7, 1.0].forEach(level => {
+                ctx.beginPath();
+                for (let i = 0; i < 5; i++) {
+                    const angle = (Math.PI * 2 * i) / 5 - Math.PI / 2;
+                    const x = cx + Math.cos(angle) * radius * level;
+                    const y = cy + Math.sin(angle) * radius * level;
+                    if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+                }
+                ctx.closePath();
+                ctx.strokeStyle = tc.grid;
+                ctx.stroke();
+            });
+
+            // Earth Reference (Dashed)
+            ctx.beginPath();
+            ctx.setLineDash([3, 3]);
+            for (let i = 0; i < 5; i++) {
+                const angle = (Math.PI * 2 * i) / 5 - Math.PI / 2;
+                const x = cx + Math.cos(angle) * radius * 0.92;
+                const y = cy + Math.sin(angle) * radius * 0.92;
+                if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+            }
+            ctx.closePath();
+            ctx.strokeStyle = tc.text;
+            ctx.stroke();
+            ctx.setLineDash([]);
+
+            // Active Exoplanet Polygon
+            ctx.beginPath();
+            activePlanet.radar.forEach((val, i) => {
+                const angle = (Math.PI * 2 * i) / 5 - Math.PI / 2;
+                const x = cx + Math.cos(angle) * radius * val;
+                const y = cy + Math.sin(angle) * radius * val;
+                if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+            });
+            ctx.closePath();
+            ctx.fillStyle = tc.fill;
+            ctx.fill();
+            ctx.strokeStyle = tc.accent;
+            ctx.lineWidth = 2;
+            ctx.stroke();
+
+            // Axis Labels
+            ctx.fillStyle = tc.text;
+            ctx.font = '10px "JetBrains Mono", monospace';
+            ctx.textAlign = 'center';
+            labels.forEach((lbl, i) => {
+                const angle = (Math.PI * 2 * i) / 5 - Math.PI / 2;
+                const x = cx + Math.cos(angle) * (radius + 18);
+                const y = cy + Math.sin(angle) * (radius + 14) + 3;
+                ctx.fillText(lbl, x, y);
+            });
+            ctx.restore();
+        }
+
+        function drawTransitCurve() {
+            const canvas = document.getElementById('transit-canvas');
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+            const dpr = window.devicePixelRatio || 1;
+            const rect = canvas.getBoundingClientRect();
+            if (rect.width === 0 || rect.height === 0) return;
+
+            canvas.width = Math.floor(rect.width * dpr);
+            canvas.height = Math.floor(rect.height * dpr);
+            ctx.save();
+            ctx.scale(dpr, dpr);
+            ctx.clearRect(0, 0, rect.width, rect.height);
+
+            const tc = getThemeColors();
+            ctx.strokeStyle = tc.grid;
+            ctx.beginPath();
+            ctx.moveTo(0, 28); ctx.lineTo(rect.width, 28);
+            ctx.moveTo(0, rect.height - 20); ctx.lineTo(rect.width, rect.height - 20);
+            ctx.stroke();
+
+            ctx.beginPath();
+            const dipFactor = Math.min(60, parseFloat(activePlanet.transitDip.replace('-', '')) * 110 + 28);
+            for (let x = 0; x <= rect.width; x += 2) {
+                const u = (x / rect.width - 0.5) * 6;
+                const dip = Math.exp(-Math.pow(Math.abs(u), 4)) * dipFactor;
+                const y = 28 + dip;
+                if (x === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+            }
+            ctx.strokeStyle = tc.warn;
+            ctx.lineWidth = 2.5;
+            ctx.stroke();
+
+            ctx.fillStyle = tc.text;
+            ctx.font = '10px "JetBrains Mono", monospace';
+            ctx.fillText('1.000 Flux', 8, 20);
+            ctx.restore();
+        }
+
+        function initStarfield() {
+            const canvas = document.getElementById('starfield-canvas');
+            const ctx = canvas.getContext('2d');
+            let stars = [];
+            const resize = () => {
+                canvas.width = window.innerWidth;
+                canvas.height = window.innerHeight;
+                stars = Array.from({ length: 95 }, () => ({
+                    x: Math.random() * canvas.width,
+                    y: Math.random() * canvas.height,
+                    r: Math.random() * 1.4 + 0.3,
+                    alpha: Math.random() * 0.7 + 0.2,
+                    speed: Math.random() * 0.14 + 0.03
+                }));
+            };
+            resize();
+            window.addEventListener('resize', resize);
+            function render() {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                const tc = getThemeColors();
+                stars.forEach(s => {
+                    s.y -= s.speed;
+                    if (s.y < 0) s.y = canvas.height;
+                    ctx.beginPath();
+                    ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
+                    ctx.fillStyle = tc.text;
+                    ctx.globalAlpha = s.alpha * 0.5;
+                    ctx.fill();
+                });
+                ctx.globalAlpha = 1;
+                requestAnimationFrame(render);
+            }
+            render();
+        }
+
+        // ==========================================================================
+        // RELATIVISTIC PROPULSION & TERRAFORMING CALCULATORS
+        // ==========================================================================
+        function updatePropulsionCalc() {
+            const v = selectedShipSpeed; // fraction of c
+            const gamma = 1 / Math.sqrt(1 - v * v);
+            const earthYears = activePlanet.distance / v;
+            const shipYears = earthYears / gamma;
+            const massRatio = (1 + v * 16).toFixed(1);
+
+            document.getElementById('lorentz-badge').textContent = `γ = ${gamma.toFixed(3)}`;
+            document.getElementById('calc-earth-time').textContent = earthYears < 100 ? `${earthYears.toFixed(1)} yrs` : `${Math.round(earthYears).toLocaleString()} yrs`;
+            document.getElementById('calc-ship-time').textContent = shipYears < 100 ? `${shipYears.toFixed(1)} yrs` : `${Math.round(shipYears).toLocaleString()} yrs`;
+            document.getElementById('calc-fuel-ratio').textContent = `1:${massRatio}`;
+        }
+
+        function updateTerraformingSim() {
+            const p = parseFloat(document.getElementById('sim-pressure').value);
+            const gh = parseFloat(document.getElementById('sim-greenhouse').value);
+            const flux = parseFloat(document.getElementById('sim-flux').value);
+            const albedo = parseFloat(document.getElementById('sim-albedo').value);
+
+            document.getElementById('val-pressure').textContent = `${p.toFixed(2)} atm`;
+            document.getElementById('val-greenhouse').textContent = `${gh.toFixed(1)}%`;
+            document.getElementById('val-flux').textContent = `${flux.toFixed(2)} S⊕`;
+            document.getElementById('val-albedo').textContent = albedo.toFixed(2);
+
+            // Radiative equilibrium + greenhouse warming approximation
+            const baseTempK = 255 * Math.pow((flux * (1 - albedo)) / 0.7, 0.25);
+            const greenhouseWarming = gh * 2.8 + Math.log(p + 0.5) * 14;
+            const surfaceK = Math.round(baseTempK + greenhouseWarming);
+            const surfaceC = (surfaceK - 273.15).toFixed(1);
+
+            const tempDiff = Math.abs(surfaceK - 288);
+            const pDiff = Math.abs(p - 1.2);
+            const score = Math.max(5, Math.min(99, Math.round(100 - tempDiff * 0.65 - pDiff * 8)));
+
+            let waterState = 'LIQUID OCEAN';
+            if (surfaceK < 273) waterState = 'GLOBAL GLACIATION';
+            else if (surfaceK > 373) waterState = 'RUNAWAY STEAM';
+
+            document.getElementById('sim-score').textContent = `${score}%`;
+            document.getElementById('sim-temp-out').textContent = `${surfaceC > 0 ? '+' : ''}${surfaceC}°C (${surfaceK}K)`;
+            document.getElementById('sim-water-out').textContent = waterState;
+        }
+
+        // ==========================================================================
+        // SELECT PLANET & SYNCHRONIZE UI
+        // ==========================================================================
+        function selectPlanet(planetId) {
+            const found = EXOPLANETS.find(p => p.id === planetId);
+            if (!found) return;
+            activePlanet = found;
+            playUISound(740, 'sine', 0.06);
+
+            document.getElementById('planet-sector').textContent = activePlanet.sector;
+            document.getElementById('planet-star-badge').textContent = activePlanet.starType;
+            document.getElementById('planet-name').textContent = activePlanet.name;
+            document.getElementById('planet-desc').textContent = activePlanet.desc;
+            document.getElementById('stat-esi').textContent = activePlanet.esi.toFixed(2);
+            document.getElementById('stat-dist').textContent = activePlanet.distance;
+            document.getElementById('stat-temp').textContent = activePlanet.temp;
+            document.getElementById('hud-period').textContent = activePlanet.period;
+            document.getElementById('hud-radius').textContent = activePlanet.radius;
+            document.getElementById('hud-mass').textContent = activePlanet.mass;
+            document.getElementById('live-coords').textContent = activePlanet.coords;
+            document.getElementById('transit-depth-badge').textContent = `ΔF: ${activePlanet.transitDip}`;
+            document.getElementById('bio-mag').textContent = activePlanet.mag;
+            document.getElementById('bio-tidal').textContent = activePlanet.tidal;
+            document.getElementById('bio-verdict').textContent = activePlanet.verdict;
+            document.getElementById('note-target-label').textContent = activePlanet.name;
+
+            // Load Natural Sim Defaults
+            document.getElementById('sim-pressure').value = activePlanet.naturalSim.pressure;
+            document.getElementById('sim-greenhouse').value = activePlanet.naturalSim.greenhouse;
+            document.getElementById('sim-flux').value = activePlanet.naturalSim.flux;
+            document.getElementById('sim-albedo').value = activePlanet.naturalSim.albedo;
+
+            renderPlanetSelector();
+            renderChemicalBars();
+            drawRadarChart();
+            drawTransitCurve();
+            updatePropulsionCalc();
+            updateTerraformingSim();
+            updateGlobeColors(activePlanet);
+        }
+
+        function renderPlanetSelector() {
+            const group = document.getElementById('planet-selector-group');
+            group.innerHTML = EXOPLANETS.map(p => `
+                <button onclick="selectPlanet('${p.id}')" class="p-2.5 rounded-xl text-left transition-all border ${p.id === activePlanet.id ? 'bg-cyan-500/15 border-cyan-400 theme-text-primary shadow-sm' : 'glass-panel hover:bg-white/5 theme-text-secondary'}">
+                    <div class="flex items-center justify-between text-[10px] font-mono">
+                        <span class="theme-accent">${p.type}</span>
+                        <span>${p.esi}</span>
+                    </div>
+                    <div class="font-display font-bold text-xs truncate mt-0.5 theme-text-primary">${p.name}</div>
+                </button>
+            `).join('');
+        }
+
+        function renderChemicalBars() {
+            document.getElementById('chem-bars').innerHTML = activePlanet.composition.map(c => `
+                <div class="theme-subcard p-3 rounded-xl">
+                    <div class="flex justify-between text-[11px] font-mono mb-1.5">
+                        <span class="theme-text-secondary">${c.label}</span>
+                        <span class="theme-accent font-semibold">${c.pct}%</span>
+                    </div>
+                    <div class="w-full h-1.5 bg-slate-500/20 rounded-full overflow-hidden">
+                        <div class="${c.color} h-full rounded-full" style="width: ${c.pct}%"></div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // ==========================================================================
+        // SIDE-BY-SIDE COMPARISON MODAL
+        // ==========================================================================
+        function initComparisonModal() {
+            const selA = document.getElementById('compare-select-a');
+            const selB = document.getElementById('compare-select-b');
+            const opts = EXOPLANETS.map(p => `<option value="${p.id}">${p.name} (ESI ${p.esi})</option>`).join('');
+            selA.innerHTML = opts;
+            selB.innerHTML = opts;
+            selA.value = EXOPLANETS[0].id;
+            selB.value = EXOPLANETS[1].id;
+
+            const renderComparison = () => {
+                const a = EXOPLANETS.find(p => p.id === selA.value);
+                const b = EXOPLANETS.find(p => p.id === selB.value);
+                const rows = [
+                    { label: 'Classification', valA: a.type, valB: b.type },
+                    { label: 'Host Star', valA: a.starType, valB: b.starType },
+                    { label: 'Habitability (ESI)', valA: a.esi, valB: b.esi, highlight: true },
+                    { label: 'Distance (Light-Years)', valA: `${a.distance} LY`, valB: `${b.distance} LY` },
+                    { label: 'Equilibrium Temp', valA: `${a.temp} K`, valB: `${b.temp} K` },
+                    { label: 'Planetary Radius', valA: a.radius, valB: b.radius },
+                    { label: 'Planetary Mass', valA: a.mass, valB: b.mass },
+                    { label: 'Orbital Period', valA: a.period, valB: b.period },
+                    { label: 'Magnetic Shielding', valA: a.mag, valB: b.mag }
+                ];
+                document.getElementById('compare-table-body').innerHTML = rows.map(r => `
+                    <div class="grid grid-cols-3 gap-2 p-2.5 rounded-xl theme-subcard items-center">
+                        <span class="theme-text-secondary">${r.label}</span>
+                        <span class="font-semibold ${r.highlight ? 'theme-accent' : 'theme-text-primary'}">${r.valA}</span>
+                        <span class="font-semibold ${r.highlight ? 'text-emerald-500' : 'theme-text-primary'}">${r.valB}</span>
+                    </div>
+                `).join('');
+            };
+
+            selA.addEventListener('change', renderComparison);
+            selB.addEventListener('change', renderComparison);
+            renderComparison();
+        }
+
+        // ==========================================================================
+        // CAPTAIN'S RESEARCH LOG (localStorage + Pre-Populated Samples)
+        // ==========================================================================
+        const DEFAULT_NOTES = [
+            { planet: 'TRAPPIST-1e', text: 'NIRSpec transmission curve confirms strong H2O vapor absorption band at 1.4 microns.', date: '2026-10-16 21:14 UTC' },
+            { planet: 'KEPLER-452b', text: 'High surface gravity (1.63 R⊕) retains dense nitrogen-oxygen tropospheric column.', date: '2026-10-16 19:40 UTC' }
+        ];
+
+        function initNotesFilter() {
+            const filter = document.getElementById('note-filter');
+            filter.innerHTML = `<option value="ALL">All Exoplanets</option>` + EXOPLANETS.map(p => `<option value="${p.name}">${p.name}</option>`).join('');
+            filter.addEventListener('change', loadNotes);
+        }
+
+        function loadNotes() {
+            let raw = localStorage.getItem('aetheris_v3_notes');
+            if (!raw) {
+                localStorage.setItem('aetheris_v3_notes', JSON.stringify(DEFAULT_NOTES));
+                raw = JSON.stringify(DEFAULT_NOTES);
+            }
+            const notes = JSON.parse(raw);
+            const filterVal = document.getElementById('note-filter').value;
+            const filtered = filterVal === 'ALL' ? notes : notes.filter(n => n.planet === filterVal);
+
+            const list = document.getElementById('notes-list');
+            list.innerHTML = filtered.length ? filtered.map((n, idx) => `
+                <div class="p-3 rounded-xl theme-subcard flex justify-between items-start text-xs font-mono">
+                    <div>
+                        <span class="theme-accent font-semibold">[${n.planet}]</span>
+                        <span class="theme-text-primary ml-1">${n.text}</span>
+                        <div class="text-[10px] theme-text-secondary mt-1">${n.date}</div>
+                    </div>
+                    <button onclick="deleteNote(${idx})" aria-label="Delete Log Entry" class="text-rose-500 hover:text-rose-400 ml-3 px-1.5">✕</button>
+                </div>
+            `).join('') : '<div class="text-xs font-mono theme-text-secondary p-3">No research logs match the selected filter.</div>';
+        }
+
+        function saveNote() {
+            const input = document.getElementById('note-input');
+            if (!input.value.trim()) return;
+            const notes = JSON.parse(localStorage.getItem('aetheris_v3_notes') || '[]');
+            const nowStr = new Date().toISOString().replace('T', ' ').slice(0, 16) + ' UTC';
+            notes.unshift({ planet: activePlanet.name, text: input.value.trim(), date: nowStr });
+            localStorage.setItem('aetheris_v3_notes', JSON.stringify(notes));
+            input.value = '';
+            loadNotes();
+            playUISound(880, 'sine', 0.06);
+            showToast(`Research log recorded for ${activePlanet.name}.`);
+        }
+
+        window.deleteNote = function(idx) {
+            const notes = JSON.parse(localStorage.getItem('aetheris_v3_notes') || '[]');
+            notes.splice(idx, 1);
+            localStorage.setItem('aetheris_v3_notes', JSON.stringify(notes));
+            loadNotes();
+            showToast('Research log entry removed.');
+        };
+
+        // ==========================================================================
+        // CLIPBOARD MARKDOWN TABLE & SNAPSHOT CAPTURE
+        // ==========================================================================
+        function copyMarkdownSummary() {
+            const md = [
+                `### 🪐 Aetheris Telemetry Report: ${activePlanet.name}`,
+                `| Parameter | Value |`,
+                `| :--- | :--- |`,
+                `| **Sector** | ${activePlanet.sector} |`,
+                `| **Classification** | ${activePlanet.type} (${activePlanet.starType}) |`,
+                `| **Earth Similarity (ESI)** | ${activePlanet.esi} |`,
+                `| **Distance** | ${activePlanet.distance} Light-Years |`,
+                `| **Equilibrium Temp** | ${activePlanet.temp} K |`,
+                `| **Radius / Mass** | ${activePlanet.radius} / ${activePlanet.mass} |`,
+                `| **Orbital Period** | ${activePlanet.period} |`
+            ].join('\n');
+
+            const ta = document.createElement('textarea');
+            ta.value = md;
+            document.body.appendChild(ta);
+            ta.select();
+            document.execCommand('copy');
+            ta.remove();
+            playUISound(960, 'sine', 0.07);
+            showToast('Copied GitHub Markdown telemetry table to clipboard!');
+        }
+
+        function captureSnapshotPNG() {
+            if (!renderer) return;
+            renderer.render(scene, camera);
+            const dataURL = renderer.domElement.toDataURL('image/png');
+            const link = document.createElement('a');
+            link.download = `${activePlanet.id}-3d-snapshot.png`;
+            link.href = dataURL;
+            link.click();
+            playUISound(1040, 'triangle', 0.08);
+            showToast(`Saved HD 3D snapshot: ${activePlanet.id}-3d-snapshot.png`);
+        }
+
+        // ==========================================================================
+        // INITIALIZATION & EVENT LISTENERS
+        // ==========================================================================
+        window.onload = function() {
+            lucide.createIcons();
+
+            // Restore Theme from localStorage
+            const savedTheme = localStorage.getItem('aetheris_v3_theme') || 'dark';
+            applyTheme(savedTheme);
+
+            initStarfield();
+            initThreeGlobe();
+            animateThree();
+            initNotesFilter();
+            initComparisonModal();
+            selectPlanet('kepler-452b');
+            drawSpectrumCanvas();
+            loadNotes();
+
+            // ResizeObserver for Bento Canvases so they remain crisp at any breakpoint
+            const canvasObserver = new ResizeObserver(() => {
+                drawRadarChart();
+                drawTransitCurve();
+            });
+            canvasObserver.observe(document.getElementById('radar-canvas'));
+            canvasObserver.observe(document.getElementById('transit-canvas'));
+
+            // Cursor Spotlight Tracking on Bento Cards
+            document.querySelectorAll('.bento-card').forEach(card => {
+                card.addEventListener('mousemove', e => {
+                    const rect = card.getBoundingClientRect();
+                    card.style.setProperty('--mouse-x', `${e.clientX - rect.left}px`);
+                    card.style.setProperty('--mouse-y', `${e.clientY - rect.top}px`);
+                });
+            });
+
+            // 3D Viewport Controls
+            document.getElementById('zoom-in').addEventListener('click', () => {
+                if (camera.position.z > 2.8) camera.position.z -= 0.4;
+                playUISound(660);
+            });
+            document.getElementById('zoom-out').addEventListener('click', () => {
+                if (camera.position.z < 8.5) camera.position.z += 0.4;
+                playUISound(540);
+            });
+            document.getElementById('btn-toggle-wireframe').addEventListener('click', () => {
+                isWireframe = !isWireframe;
+                planetMesh.material.wireframe = isWireframe;
+                playUISound(780);
+                showToast(`Geodesic Wireframe Topology: ${isWireframe ? 'ON' : 'OFF'}`);
+            });
+            document.getElementById('btn-atmo-glow').addEventListener('click', e => {
+                showHalo = !showHalo;
+                haloMesh.visible = showHalo;
+                e.currentTarget.textContent = `Halo: ${showHalo ? 'ON' : 'OFF'}`;
+                playUISound(700);
+            });
+            document.getElementById('btn-rot-speed').addEventListener('click', e => {
+                spinMultiplier = spinMultiplier === 1 ? 3 : spinMultiplier === 3 ? 0 : 1;
+                e.currentTarget.textContent = `Spin: ${spinMultiplier}x`;
+                playUISound(750);
+            });
+            document.getElementById('btn-snapshot').addEventListener('click', captureSnapshotPNG);
+            document.getElementById('btn-fullscreen').addEventListener('click', () => {
+                const wrapper = document.getElementById('viewport-wrapper');
+                if (!document.fullscreenElement) {
+                    wrapper.requestFullscreen().catch(() => {});
+                } else {
+                    document.exitFullscreen().catch(() => {});
+                }
+            });
+
+            // Laser Scan Animation
+            document.getElementById('btn-scan-surface').addEventListener('click', () => {
+                const laser = document.getElementById('scan-laser');
+                laser.style.opacity = '1';
+                laser.style.top = '100%';
+                playUISound(520, 'sawtooth', 0.18);
+                showToast(`Scanning ${activePlanet.name} atmospheric column...`);
+                setTimeout(() => {
+                    laser.style.opacity = '0';
+                    laser.style.top = '0%';
+                    showToast(`Spectral scan complete: ${activePlanet.verdict} confirmed.`);
+                }, 1100);
+            });
+
+            // Spectroscopy Band Filters & Pause
+            document.querySelectorAll('.spec-filter-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    activeSpecBand = btn.dataset.band;
+                    document.querySelectorAll('.spec-filter-btn').forEach(b => {
+                        b.classList.remove('bg-cyan-500/20', 'theme-accent', 'font-semibold');
+                        b.classList.add('theme-text-secondary');
+                    });
+                    btn.classList.add('bg-cyan-500/20', 'theme-accent', 'font-semibold');
+                    btn.classList.remove('theme-text-secondary');
+                    playUISound(840);
+                });
+            });
+            document.getElementById('spec-pause-btn').addEventListener('click', () => {
+                specPaused = !specPaused;
+                document.getElementById('spec-pause-icon').setAttribute('data-lucide', specPaused ? 'play' : 'pause');
+                lucide.createIcons();
+            });
+
+            // Propulsion Speed Buttons
+            document.querySelectorAll('.prop-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    selectedShipSpeed = parseFloat(btn.dataset.speed);
+                    document.querySelectorAll('.prop-btn').forEach(b => b.classList.remove('border', 'border-cyan-500/50', 'bg-cyan-500/15'));
+                    btn.classList.add('border', 'border-cyan-500/50', 'bg-cyan-500/15');
+                    updatePropulsionCalc();
+                    playUISound(790);
+                });
+            });
+
+            // Terraforming Sliders & Reset
+            ['sim-pressure', 'sim-greenhouse', 'sim-flux', 'sim-albedo'].forEach(id => {
+                document.getElementById(id).addEventListener('input', updateTerraformingSim);
+            });
+            document.getElementById('btn-reset-sim').addEventListener('click', () => {
+                selectPlanet(activePlanet.id);
+                showToast(`Reset ${activePlanet.name} parameters to natural equilibrium.`);
+            });
+
+            // Export JSON & Copy Markdown
+            document.getElementById('btn-export-json').addEventListener('click', () => {
+                const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(activePlanet, null, 2));
+                const dl = document.createElement('a');
+                dl.setAttribute("href", dataStr);
+                dl.setAttribute("download", `${activePlanet.id}-telemetry.json`);
+                document.body.appendChild(dl);
+                dl.click();
+                dl.remove();
+                playUISound(900);
+                showToast(`Exported ${activePlanet.name} telemetry JSON.`);
+            });
+            document.getElementById('btn-copy-md').addEventListener('click', copyMarkdownSummary);
+
+            // 3-Way Theme Switcher
+            document.getElementById('theme-toggle').addEventListener('click', () => {
+                const current = document.documentElement.getAttribute('data-theme') || 'dark';
+                const next = themes[(themes.indexOf(current) + 1) % themes.length];
+                applyTheme(next);
+                playUISound(820);
+                showToast(`Theme Activated: ${next.toUpperCase()}`);
+            });
+
+            // Audio Toggles
+            document.getElementById('drone-toggle').addEventListener('click', toggleAmbientDrone);
+            const toggleSoundFX = () => {
+                soundEnabled = !soundEnabled;
+                document.getElementById('sound-icon').setAttribute('data-lucide', soundEnabled ? 'volume-2' : 'volume-x');
+                lucide.createIcons();
+                showToast(soundEnabled ? 'UI Audio FX: ON' : 'UI Audio FX: MUTED');
+            };
+            document.getElementById('sound-toggle').addEventListener('click', toggleSoundFX);
+            document.getElementById('mobile-sound-toggle').addEventListener('click', toggleSoundFX);
+
+            // Mobile Hamburger Drawer
+            const mobileDrawer = document.getElementById('mobile-drawer');
+            const mobileBtn = document.getElementById('mobile-menu-btn');
+            mobileBtn.addEventListener('click', () => {
+                const isOpen = !mobileDrawer.classList.contains('hidden');
+                mobileDrawer.classList.toggle('hidden');
+                mobileBtn.setAttribute('aria-expanded', String(!isOpen));
+            });
+            document.querySelectorAll('.mobile-nav-link').forEach(link => {
+                link.addEventListener('click', () => mobileDrawer.classList.add('hidden'));
+            });
+
+            // Notebook Events
+            document.getElementById('btn-save-note').addEventListener('click', saveNote);
+            document.getElementById('btn-clear-notes').addEventListener('click', () => {
+                localStorage.removeItem('aetheris_v3_notes');
+                loadNotes();
+                showToast('Reset research notebook to default logs.');
+            });
+
+            // Modals: Compare, Command Palette, Shortcuts Help
+            const compareModal = document.getElementById('compare-modal');
+            const openCompare = () => { compareModal.classList.remove('hidden'); compareModal.classList.add('flex'); playUISound(760); };
+            document.getElementById('compare-open-btn').addEventListener('click', openCompare);
+            document.getElementById('inline-compare-btn').addEventListener('click', openCompare);
+            document.getElementById('compare-close').addEventListener('click', () => compareModal.classList.add('hidden'));
+
+            const helpModal = document.getElementById('help-modal');
+            const openHelp = () => { helpModal.classList.remove('hidden'); helpModal.classList.add('flex'); };
+            document.getElementById('help-btn').addEventListener('click', openHelp);
+            document.getElementById('mobile-help-btn').addEventListener('click', () => { mobileDrawer.classList.add('hidden'); openHelp(); });
+            document.getElementById('help-close').addEventListener('click', () => helpModal.classList.add('hidden'));
+
+            const cmdModal = document.getElementById('cmd-modal');
+            const cmdInput = document.getElementById('cmd-input');
+            document.getElementById('cmd-btn').addEventListener('click', () => {
+                cmdModal.classList.remove('hidden'); cmdModal.classList.add('flex');
+                cmdInput.value = ''; renderCmdList(''); cmdInput.focus();
+            });
+            document.getElementById('cmd-close').addEventListener('click', () => cmdModal.classList.add('hidden'));
+            cmdInput.addEventListener('input', e => renderCmdList(e.target.value));
+
+            function renderCmdList(q) {
+                const query = q.toLowerCase();
+                const planetMatches = EXOPLANETS.filter(p => p.name.toLowerCase().includes(query) || p.type.toLowerCase().includes(query));
+                document.getElementById('cmd-results').innerHTML = planetMatches.map(p => `
+                    <button onclick="selectPlanet('${p.id}'); document.getElementById('cmd-modal').classList.add('hidden');" class="w-full p-2.5 rounded-xl hover:bg-cyan-500/20 flex items-center justify-between text-left transition-colors">
+                        <div>
+                            <span class="theme-text-primary font-bold block">${p.name}</span>
+                            <span class="text-[10px] theme-text-secondary">${p.type} • ${p.starType}</span>
+                        </div>
+                        <span class="theme-accent font-semibold">ESI ${p.esi}</span>
+                    </button>
+                `).join('') || '<div class="p-3 theme-text-secondary">No matching targets found.</div>';
+            }
+
+            // Global Keyboard Shortcuts
+            window.addEventListener('keydown', e => {
+                const tag = document.activeElement ? document.activeElement.tagName : '';
+                if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
+                    e.preventDefault();
+                    document.getElementById('cmd-btn').click();
+                } else if (tag !== 'INPUT' && tag !== 'TEXTAREA' && tag !== 'SELECT') {
+                    if (e.key === '?') openHelp();
+                    if (e.key.toLowerCase() === 'c') openCompare();
+                    if (e.key.toLowerCase() === 't') document.getElementById('theme-toggle').click();
+                }
+                if (e.key === 'Escape') {
+                    cmdModal.classList.add('hidden');
+                    helpModal.classList.add('hidden');
+                    compareModal.classList.add('hidden');
+                }
+            });
+
+            // Live UTC Clock & Telemetry Micro-Jitter
+            setInterval(() => {
+                const now = new Date();
+                document.getElementById('live-clock').textContent = now.toISOString().split('T')[1].slice(0, 8) + ' UTC';
+                const jitter = (-14.2 + (Math.random() - 0.5) * 0.4).toFixed(1);
+                document.getElementById('live-drift').textContent = `${jitter} m/s`;
+            }, 1000);
+        };
+    </script>
+    <!-- SAEED SIGNATURE INTRO LOGIC / ADD-ONLY EXTENSION -->
+    <script id="ae-boot-logic">
+      (() => {
+        'use strict';
+        const screen = document.getElementById('ae-boot-screen');
+        const number = document.getElementById('ae-boot-number');
+        const fill = document.getElementById('ae-boot-fill');
+        const track = document.getElementById('ae-boot-track');
+        const status = document.getElementById('ae-boot-status');
+        const link = document.getElementById('ae-boot-link');
+        const canvas = document.getElementById('ae-boot-canvas');
+        if (!screen || !number || !fill || !track || !status || !canvas) return;
+
+        const phases = [
+          { at: 1, text: 'Calibrating orbital telemetry' },
+          { at: 22, text: 'Mapping celestial coordinates' },
+          { at: 43, text: 'Synchronizing spectral data' },
+          { at: 64, text: 'Rendering exoplanet systems' },
+          { at: 82, text: 'Verifying observatory modules' },
+          { at: 96, text: 'Finalizing mission interface' },
+          { at: 100, text: 'All systems nominal — welcome aboard' }
+        ];
+        let progress = 1;
+        let ready = document.readyState === 'complete';
+        let readyAt = 0;
+        let finishStart = 0;
+        let lastFrame = 0;
+        let rafId = 0;
+        let finished = false;
+        const startAt = performance.now();
+        const minIntro = 3050;
+        const stars = [];
+        const ctx = canvas.getContext('2d', { alpha: true });
+        const reducedMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+        window.addEventListener('load', () => { ready = true; readyAt = performance.now(); }, { once: true });
+
+        function resizeStars() {
+          if (!ctx) return;
+          const dpr = Math.min(window.devicePixelRatio || 1, 2);
+          canvas.width = Math.floor(window.innerWidth * dpr);
+          canvas.height = Math.floor(window.innerHeight * dpr);
+          canvas.style.width = window.innerWidth + 'px';
+          canvas.style.height = window.innerHeight + 'px';
+          ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+          stars.length = 0;
+          const count = Math.min(150, Math.max(55, Math.floor(window.innerWidth * window.innerHeight / 9500)));
+          for (let i = 0; i < count; i++) {
+            stars.push({ x: Math.random() * window.innerWidth, y: Math.random() * window.innerHeight,
+              r: Math.random() * 1.15 + .2, a: Math.random() * .56 + .12,
+              tw: Math.random() * .018 + .003, drift: (Math.random() - .5) * .08 });
+          }
+        }
+        function drawStars() {
+          if (!ctx || finished) return;
+          const w = window.innerWidth, h = window.innerHeight;
+          ctx.clearRect(0, 0, w, h);
+          for (const s of stars) {
+            s.a += (Math.random() - .5) * s.tw;
+            s.a = Math.max(.08, Math.min(.82, s.a));
+            if (!reducedMotion) s.y -= .035;
+            if (s.y < -2) { s.y = h + 2; s.x = Math.random() * w; }
+            ctx.beginPath(); ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
+            ctx.fillStyle = `rgba(142, 226, 255, ${s.a})`; ctx.fill();
+          }
+          if (!reducedMotion) rafId = requestAnimationFrame(drawStars);
+        }
+        function setProgress(value) {
+          progress = Math.max(progress, Math.min(100, Math.floor(value)));
+          number.textContent = String(progress).padStart(2, '0');
+          fill.style.width = progress + '%';
+          track.setAttribute('aria-valuenow', String(progress));
+          let phase = phases[0];
+          for (const item of phases) if (progress >= item.at) phase = item;
+          status.textContent = phase.text;
+          if (link) link.textContent = progress >= 100 ? 'ESTABLISHED' : (progress >= 80 ? 'SYNCHRONIZING' : 'CONNECTING');
+        }
+        function finishIntro() {
+          if (finished) return;
+          finished = true;
+          if (rafId) cancelAnimationFrame(rafId);
+          setProgress(100);
+          screen.classList.add('ae-boot-out');
+          window.setTimeout(() => {
+            screen.hidden = true;
+            screen.setAttribute('aria-hidden', 'true');
+          }, 900);
+        }
+        function animate(now) {
+          if (finished) return;
+          if (now - lastFrame < 24) { requestAnimationFrame(animate); return; }
+          lastFrame = now;
+          const elapsed = now - startAt;
+          if (elapsed < minIntro) {
+            const t = Math.min(1, elapsed / minIntro);
+            const eased = 1 - Math.pow(1 - t, 2.15);
+            setProgress(1 + eased * 92);
+          } else if (!ready) {
+            setProgress(94);
+          } else {
+            if (!finishStart) finishStart = now;
+            const t = Math.min(1, (now - finishStart) / 850);
+            setProgress(94 + (1 - Math.pow(1 - t, 2)) * 6);
+            if (t >= 1) { finishIntro(); return; }
+          }
+          requestAnimationFrame(animate);
+        }
+
+        resizeStars();
+        if (ctx) drawStars();
+        window.addEventListener('resize', resizeStars, { passive: true });
+        setProgress(1);
+        requestAnimationFrame(animate);
+      })();
+    </script>
+</body>
+</html>
